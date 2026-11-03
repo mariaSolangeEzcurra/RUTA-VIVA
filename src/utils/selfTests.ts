@@ -18,6 +18,7 @@ import { qualityReport } from './quality';
 import { recommendForZone } from './recommend';
 import { assessEntity } from './entity';
 import { createEmptyState } from './store';
+import { analyzeTemporal, datasetCoverage, forecastMonth, holidayNear, monthlyProfile, temporalInsights } from './temporal';
 
 export interface TestResult {
   name: string;
@@ -213,6 +214,28 @@ const tests: TestDef[] = [
     const doc = buildZonePdf({ zone: z, snapshot: a, members, explanation: explainZone(z, a), recommendations: recommendForZone(z), quality: qualityReport(members), entity: assessEntity(z, undefined), interventions: [], dataVersion: s.dataVersion });
     const bytes = doc.output('arraybuffer').byteLength;
     assert(bytes > 2000, `PDF de ${bytes} bytes`);
+  } },
+{ group: 'Temporalidad', name: 'Cobertura, perfil mensual y meses sin datos', run: async () => {
+    const s = await importRows(createEmptyState(), [...clusterRows('M', 2022), ['M9', '05/01/2023', '20:00', 'AREQUIPA', 'AREQUIPA', -16.4, -71.53, 'ATROPELLO', 1]], 'TM1');
+    const v = buildViews(s, null);
+    const cov = datasetCoverage(v);
+    assert(cov.get(2022)?.first === 1 && cov.get(2022)?.last === 3, 'Cobertura 2022 feb–abr');
+    const prof = monthlyProfile(v, cov);
+    assert(prof[0].yearsObserved === 1 && prof[0].total === 1, 'Enero solo cubierto en 2023');
+    assert(prof[6].mean === null, 'Julio sin cobertura no se trata como cero');
+  } },
+{ group: 'Temporalidad', name: 'Fechas recurrentes, feriados y expectativa de Poisson', run: async () => {
+    const rows = [2021, 2022, 2023].map((y, i) => [`R${i}`, `0${2 + i}/01/${y}`, '22:00', 'AREQUIPA', 'AREQUIPA', -16.4, -71.53, 'ATROPELLO', 1]);
+    const s = await importRows(createEmptyState(), rows, 'TM2');
+    const v = buildViews(s, null);
+    const t = analyzeTemporal(v, datasetCoverage(v));
+    assert(t.windows.length === 1 && t.windows[0].years.length === 3 && t.windows[0].month === 0, 'Ventana de enero repetida en 3 años');
+    assert(holidayNear('2022-01-02') === 'Año Nuevo' && holidayNear('2022-03-15') === null, 'Detección de feriados');
+    assert(holidayNear('2024-03-29') === 'Viernes Santo', 'Semana Santa calculada');
+    const f = forecastMonth(t.months[0]);
+    assert(f.lambda === 1 && Math.abs((f.pAtLeastOne ?? 0) - (1 - Math.exp(-1))) < 1e-9, 'Media y probabilidad de Poisson');
+    const ins = temporalInsights(t, v, 0);
+    assert(ins.some((i) => i.kind === 'prediccion') && ins.some((i) => i.kind === 'recomendacion'), 'Interpretación con expectativa y recomendación');
   } }];
 
 

@@ -72,6 +72,19 @@ export function Methodology() {
             </dl>
           </Panel></section>
 
+          <Panel title="Análisis temporal y asistente de patrones">
+            <ul className="grid gap-2 text-sm text-ink">
+              <li>• Perfil mensual: promedio por mes calculado solo con los años en que la base cubre ese mes; los meses sin cobertura no se cuentan como cero.</li>
+              <li>• Estacionalidad: un mes se considera pico si supera 1,5 veces el promedio mensual y tiene siniestros en al menos dos años.</li>
+              <li>• Fechas recurrentes: siniestros dentro de una misma ventana de 7 días del calendario en al menos dos años distintos.</li>
+              <li>• Feriados: nacionales de larga vigencia, Semana Santa calculada y aniversario de Arequipa; se marca la coincidencia a ±1 día.</li>
+              <li>• Expectativa por mes: modelo de Poisson con la media histórica del mes; rango del 10 % al 90 % y probabilidad de al menos un siniestro. No incorpora tránsito, clima ni intervenciones, y no implica causalidad.</li>
+              <li>• Posibles causas: causa y clase registradas más frecuentes en el mes, comparadas con el resto del año. Son anotaciones del registro, no causas verificadas.</li>
+              <li>• Ubicación: referencia de lugar por geocodificación inversa de OpenStreetMap (Nominatim), con caché y una solicitud por segundo; no verificada con la red vial oficial.</li>
+              <li>• Las interpretaciones se generan con reglas explícitas y trazables, sin modelo de lenguaje.</li>
+            </ul>
+          </Panel>
+
           <section id="ipiv" className="scroll-mt-28"><Panel title="Índice de Prioridad de Intervención Vial (IPIV)" subtitle={state.weightsVersion}>
             <p className="rounded-md bg-canvas p-3 font-mono text-sm">IPIV = 100 × Σ(wᵢ · xᵢ) / Σwᵢ</p>
             <p className="mt-2 text-sm text-muted">xᵢ: valor del criterio normalizado min–max entre todas las zonas analizadas. La suma se hace solo sobre criterios con dato disponible para la zona; los ausentes se excluyen y los pesos restantes se renormalizan. Si todas las zonas tienen el mismo valor, xᵢ = 1 cuando el valor es positivo.</p>

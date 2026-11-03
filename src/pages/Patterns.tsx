@@ -7,6 +7,7 @@ import { FilterPanel } from '../components/filters/FilterPanel';
 import { BarList } from '../components/charts/BarList';
 import { HourChart } from '../components/charts/HourChart';
 import { PersistenceMatrix } from '../components/charts/PersistenceMatrix';
+import { PatternAssistant } from '../components/temporal/PatternAssistant';
 import { countBy, computeTotals } from '../utils/metrics';
 import { weekdayOf, weekdays } from '../utils/parsing';
 import { formatInt, formatPct, titleCase } from '../utils/text';
@@ -67,22 +68,10 @@ export function Patterns() {
           <Panel title="Filtros"><FilterPanel compact /></Panel>
         </aside>
         <div className="grid gap-6">
-          <Panel title="Concentraciones espaciales" subtitle={snap ? `DBSCAN · ε = ${snap.params.epsMeters} m · mínimo ${snap.params.minPts} siniestros · distancia haversine (WGS84)` : 'Análisis no ejecutado'}>
-            {snap ?
-            <div className="grid gap-6 xl:grid-cols-[280px_1fr]">
-                <dl className="grid grid-cols-2 gap-4 xl:grid-cols-1">
-                  <div><dt className="text-xs text-muted">Concentraciones en el conjunto</dt><dd className="text-2xl font-semibold tabular-nums">{formatInt(zones.length)}</dd></div>
-                  <div><dt className="text-xs text-muted">Siniestros en concentraciones</dt><dd className="text-2xl font-semibold tabular-nums">{formatInt(filtered.filter((v) => v.zoneId).length)}</dd></div>
-                  <div><dt className="text-xs text-muted">Siniestros aislados (ruido DBSCAN)</dt><dd className="text-lg font-semibold tabular-nums">{formatInt(filtered.filter((v) => !v.zoneId && v.coordStatus === 'valida').length)}</dd></div>
-                  <div><dt className="text-xs text-muted">Excluidos por coordenadas</dt><dd className="text-lg font-semibold tabular-nums">{formatInt(filtered.filter((v) => v.coordStatus !== 'valida').length)}</dd></div>
-                  <p className="col-span-2 text-[11px] text-muted xl:col-span-1">Las concentraciones son agrupaciones de puntos. No equivalen a tramos de la red vial porque no hay una red verificada cargada.</p>
-                </dl>
-                <div>
-                  <h3 className="mb-2 text-xs font-semibold text-ink">Persistencia entre años (15 primeras por IPIV)</h3>
-                  <PersistenceMatrix zones={zones.slice(0, 15)} years={snap.yearsAnalyzed} views={views} />
-                </div>
-              </div> :
-            <p className="text-sm text-muted">Ejecute el reprocesamiento desde la barra superior o Gestión de datos.</p>}
+         
+
+          <Panel title="Asistente de patrones temporales y ubicaciones recurrentes" subtitle="Interpreta las coordenadas, identifica los lugares que se repiten y analiza qué ocurrió por mes y fecha">
+            <PatternAssistant />
           </Panel>
 
           <div className="grid gap-6 xl:grid-cols-2">
