@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import type { SiniestroView } from '../../types/data';
 import type { Coverage } from '../../utils/temporal';
 import { MONTHS, MONTHS_SHORT, monthOf } from '../../utils/temporal';
+import { HEAT_GRADIENT_CSS, heatColor, heatText } from '../../utils/quarters';
 
 interface MonthYearHeatmapProps {
   views: SiniestroView[];
@@ -55,7 +56,7 @@ export function MonthYearHeatmap({ views, coverage, selectedMonth, onSelectMonth
                     <td key={m} className="px-0.5 py-0.5">
                       <div
                         className={`flex h-7 items-center justify-center rounded tabular-nums ${selectedMonth === m ? 'ring-1 ring-primary' : ''}`}
-                        style={covered ? { background: n ? `rgba(190,18,40,${0.1 + 0.8 * n / max})` : '#f3f5f8', color: n / max > 0.5 ? '#fff' : '#111827' } : { background: '#ffffff', border: '1px dashed #dee3e9', color: '#9aa3ae' }}
+                        style={covered ? { background: n ? heatColor(n / max) : '#f3f5f8', color: n ? heatText(n / max) : '#111827', fontWeight: 600 } : { background: '#ffffff', border: '1px dashed #dee3e9', color: '#9aa3ae' }}
                         title={covered ? `${MONTHS[m]} ${y}: ${n} siniestros` : `${MONTHS[m]} ${y}: sin cobertura de datos`}>
                         
                         {covered ? n || '·' : '—'}
@@ -69,7 +70,8 @@ export function MonthYearHeatmap({ views, coverage, selectedMonth, onSelectMonth
           })}
         </tbody>
       </table>
-      <p className="mt-2 text-[11px] text-muted">Unidad: siniestros fatales por mes. Celdas con borde punteado (—): meses fuera de la cobertura de la base (no equivalen a cero).</p>
+      <div className="mt-2 flex max-w-xs items-center gap-2 text-[11px] text-muted"><span>Menos</span><span className="h-2 flex-1 rounded-full" style={{ background: HEAT_GRADIENT_CSS }} /><span>Más</span></div>
+      <p className="mt-1 text-[11px] text-muted">Unidad: siniestros fatales por mes. Celdas con borde punteado (—): meses fuera de la cobertura de la base (no equivalen a cero).</p>
     </div>);
 
 }

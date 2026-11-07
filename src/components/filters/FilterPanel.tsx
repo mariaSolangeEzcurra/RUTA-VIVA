@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
-import { RotateCcwIcon } from 'lucide-react';
+import { CalendarRangeIcon, RotateCcwIcon } from 'lucide-react';
 import type { Filters, PriorityCategory } from '../../types/data';
 import { useData } from '../../contexts/DataContext';
 import { activeFilterCount, filterOptions } from '../../utils/filters';
 import { categoryLabel } from '../../data/ipivConfig';
 import { titleCase } from '../../utils/text';
 import { FilterSelect } from './FilterSelect';
+import { QuarterChips } from './QuarterChips';
+import type { Quarter } from '../../utils/quarters';
 
 const toOpts = (arr: string[]) => arr.map((v) => ({ value: v, label: titleCase(v) }));
 
@@ -31,10 +33,17 @@ export function FilterPanel({ compact = false }: {compact?: boolean;}) {
         </button>
       </div>
       {years.length > 0 &&
-      <div className="grid grid-cols-2 gap-2">
-          <FilterSelect id="f-y1" label="Desde" value={filters.yearFrom?.toString() ?? null} options={years} onChange={(v) => set('yearFrom', v ? Number(v) : null)} />
-          <FilterSelect id="f-y2" label="Hasta" value={filters.yearTo?.toString() ?? null} options={years} onChange={(v) => set('yearTo', v ? Number(v) : null)} />
-        </div>
+      <fieldset className="grid gap-2 rounded-lg border border-primary/20 bg-gradient-to-br from-primary-soft/70 to-surface p-3">
+          <legend className="flex items-center gap-1.5 px-1 text-xs font-semibold text-primary"><CalendarRangeIcon className="h-3.5 w-3.5" />Periodo</legend>
+          <div className="grid grid-cols-2 gap-2">
+            <FilterSelect id="f-y1" label="Desde (año)" value={filters.yearFrom?.toString() ?? null} options={years} onChange={(v) => set('yearFrom', v ? Number(v) : null)} />
+            <FilterSelect id="f-y2" label="Hasta (año)" value={filters.yearTo?.toString() ?? null} options={years} onChange={(v) => set('yearTo', v ? Number(v) : null)} />
+          </div>
+          <div>
+            <p className="mb-1 text-xs font-medium text-muted">Trimestre</p>
+            <QuarterChips value={filters.trimestre as Quarter | null} onChange={(q) => set('trimestre', q)} />
+          </div>
+        </fieldset>
       }
       {o.provincias.length > 0 && <FilterSelect id="f-prov" label="Provincia" value={filters.provincia} options={toOpts(o.provincias)} allLabel="Todas" onChange={(v) => setFilters({ ...filters, provincia: v, distrito: null })} />}
       {o.distritos.length > 0 && <FilterSelect id="f-dist" label="Distrito" value={filters.distrito} options={toOpts(o.distritos)} onChange={(v) => set('distrito', v)} />}

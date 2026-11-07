@@ -5,6 +5,13 @@ import { PanelLeftCloseIcon, PanelLeftOpenIcon, SlidersHorizontalIcon } from 'lu
 import { useData } from '../contexts/DataContext';
 import { useZoneTools } from '../hooks/useZoneTools';
 import { AccidentMap } from '../components/map/AccidentMap';
+import type { ColorBy, MapMode } from '../components/map/AccidentMap';
+import { MapToolbar } from '../components/map/MapToolbar';
+import { MapTimeline } from '../components/map/MapTimeline';
+import { applyFilters, withoutPeriod } from '../utils/filters';
+import { datasetCoverage } from '../utils/temporal';
+import { quarterSeries } from '../utils/quarters';
+import type { Quarter } from '../utils/quarters';
 import { MapLegend } from '../components/map/MapLegend';
 import { SiniestroDetail } from '../components/map/SiniestroDetail';
 import { FilterPanel } from '../components/filters/FilterPanel';
@@ -14,11 +21,17 @@ import { EmptyState } from '../components/ui/EmptyState';
 const ease = [0.23, 1, 0.32, 1] as const;
 
 export function MapPage() {
-  const { filtered, filters, state, views, ready } = useData();
+  const { filtered, filters, setFilters, state, views, ready } = useData();
   const { getZone, downloadFicha } = useZoneTools();
   const [searchParams] = useSearchParams();
   const [selected, setSelected] = useState<string | null>(null);
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(() => typeof window === 'undefined' || window.innerWidth >= 1024);
+  const [mode, setMode] = useState<MapMode>('puntos');
+  const [colorBy, setColorBy] = useState<ColorBy>('prioridad');
+  const coverage = useMemo(() => datasetCoverage(views), [views]);
+  const periodBase = useMemo(() => applyFilters(views, withoutPeriod(filters)), [views, filters]);
+  const series = useMemo(() => quarterSeries(periodBase, coverage), [periodBase, coverage]);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
   const [focus, setFocus] = useState<{lat: number;lon: number;zoom: number;key: number;} | null>(null);
 
   const points = useMemo(() => filtered.filter((v) => v.coordStatus === 'valida' && v.lat !== null && v.lon !== null), [filtered]);
@@ -55,7 +68,7 @@ export function MapPage() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -12 }}
           transition={{ duration: 0.2, ease }}
-          className="absolute inset-y-0 left-0 z-[1000] w-72 overflow-y-auto border-r border-line bg-surface p-4 shadow-lg lg:static lg:shadow-none"
+          className="absolute inset-y-0 left-0 z-[1000] w-[85vw] max-w-[300px] shrink-0 overflow-y-auto lg:w-72 border-r border-line bg-surface p-4 shadow-lg lg:static lg:shadow-none"
           aria-label="Filtros">
           
             <div className="mb-3 flex items-center justify-between">
@@ -68,17 +81,26 @@ export function MapPage() {
         }
       </AnimatePresence>
 
-      <div className="relative flex-1">
-        <AccidentMap points={points} zones={zones} selectedCode={selected} onSelect={setSelected} focus={focus} fitPoints={fitPoints} fitKey={fitKey} />
-        <div className="pointer-events-none absolute inset-x-3 top-3 z-[900] flex items-start gap-2 pr-12">
-          {!filtersOpen &&
-          <button type="button" onClick={() => setFiltersOpen(true)} className="pointer-events-auto inline-flex h-9 items-center gap-2 rounded-md border border-line bg-surface px-3 text-xs font-medium shadow-sm" aria-label="Mostrar filtros">
-              <PanelLeftOpenIcon className="h-4 w-4" /> Filtros
-            </button>
-          }
-          <div className="pointer-events-auto hidden min-w-0 flex-1 xl:block"><KpiStrip variant="overlay" /></div>
+      <div className="relative min-w-0 flex-1">
+        <AccidentMap points={points} zones={zones} selectedCode={selected} onSelect={setSelected} focus={focus} fitPoints={fitPoints} fitKey={fitKey} mode={mode} colorBy={colorBy} />
+        <div className="pointer-events-none absolute inset-x-3 top-3 z-[900] flex flex-col items-start gap-2 pr-12 xl:pr-28">
+          <div className="flex w-full items-start gap-2">
+            {!filtersOpen &&
+            <button type="button" onClick={() => setFiltersOpen(true)} className="pointer-events-auto inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-xs font-semibold text-primary shadow-lg" aria-label="Mostrar filtros">
+                <PanelLeftOpenIcon className="h-4 w-4" /> Filtros
+              </button>
+            }
+            <div className="pointer-events-auto hidden min-w-0 flex-1 xl:block"><KpiStrip variant="overlay" /></div>
+          </div>
+          <MapToolbar mode={mode} onMode={setMode} colorBy={colorBy} onColorBy={setColorBy}
+          trimestre={filters.trimestre as Quarter | null} onTrimestre={(q) => setFilters({ ...filters, trimestre: q })} />
+          <MapLegend mode={mode} colorBy={colorBy} defaultOpen={!isMobile} />
         </div>
-        <div className="pointer-events-none absolute bottom-6 left-3 z-[900] hidden sm:block"><MapLegend /></div>
+        <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-[900]">
+          <MapTimeline series={series} yearFrom={filters.yearFrom} yearTo={filters.yearTo} trimestre={filters.trimestre as Quarter | null}
+          onSelect={(y, q) => setFilters({ ...filters, yearFrom: y, yearTo: y, trimestre: q })}
+          onReset={() => setFilters(withoutPeriod(filters))} />
+        </div>
       </div>
 
       <AnimatePresence>

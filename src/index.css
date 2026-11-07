@@ -1,6 +1,5 @@
 /* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
 @import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-@import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
 
 /* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
 @import 'tailwindcss/base';
@@ -29,6 +28,8 @@
 }
 html, body, #root { height: 100%; }
 body { font-family: 'Public Sans', system-ui, sans-serif; background: rgb(var(--canvas)); color: rgb(var(--ink)); }
+.leaflet-container .leaflet-control-scale-line { background: rgb(255 255 255 / 0.9); }
+@media (max-width: 639px) { .leaflet-control-scale { display: none; } }
 .leaflet-container { font-family: 'Public Sans', system-ui, sans-serif; background: #e5e9ee; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

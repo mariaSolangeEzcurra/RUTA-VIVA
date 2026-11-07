@@ -1,8 +1,9 @@
 import type { Filters, PriorityCategory, SiniestroView } from '../types/data';
 import { franjas } from './parsing';
+import { quarterOf } from './quarters';
 
 export const emptyFilters: Filters = {
-  yearFrom: null, yearTo: null, provincia: null, distrito: null, via: null, clase: null, causa: null,
+  yearFrom: null, yearTo: null, trimestre: null, provincia: null, distrito: null, via: null, clase: null, causa: null,
   tipoVehiculo: null, tipoUsuario: null, franja: null, gravedad: null, prioridad: null, tipoZona: null
 };
 
@@ -10,6 +11,7 @@ export function applyFilters(views: SiniestroView[], f: Filters): SiniestroView[
   return views.filter((v) => {
     if (f.yearFrom !== null && (v.anio === null || v.anio < f.yearFrom)) return false;
     if (f.yearTo !== null && (v.anio === null || v.anio > f.yearTo)) return false;
+    if (f.trimestre !== null && quarterOf(v.fecha) !== f.trimestre) return false;
     if (f.provincia && v.provincia !== f.provincia) return false;
     if (f.distrito && v.distrito !== f.distrito) return false;
     if (f.via && v.via !== f.via) return false;
@@ -70,3 +72,5 @@ export function filterOptions(views: SiniestroView[], provincia: string | null):
 export function activeFilterCount(f: Filters): number {
   return Object.values(f).filter((v) => v !== null).length;
 }
+/** Filtros sin el periodo (años y trimestre): base para líneas de tiempo. */
+export const withoutPeriod = (f: Filters): Filters => ({ ...f, yearFrom: null, yearTo: null, trimestre: null });

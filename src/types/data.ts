@@ -265,6 +265,8 @@ export interface StoreState {
 export interface Filters {
   yearFrom: number | null;
   yearTo: number | null;
+  /** Trimestre del año (1 = Ene–Mar … 4 = Oct–Dic) */
+  trimestre: 1 | 2 | 3 | 4 | null;
   provincia: string | null;
   distrito: string | null;
   via: string | null;
