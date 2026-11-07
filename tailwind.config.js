@@ -8,8 +8,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Public Sans"', 'system-ui', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        sans: ['"Overpass"', 'system-ui', 'sans-serif'],
+        mono: ['"Overpass Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
         navy: { DEFAULT: v('navy'), 2: v('navy-2') },
@@ -20,6 +20,7 @@ export default {
         ink: v('ink'),
         muted: v('muted'),
         fatal: v('fatal'),
+        signal: v('signal'),
         ok: v('ok'),
         warn: v('warn'),
         prio: {

@@ -76,7 +76,7 @@ export function Patterns() {
     <main className="mx-auto w-full max-w-[1600px] px-4 py-6 lg:px-6">
       <PageHeader title="Análisis de patrones" description="Explore los datos por pestañas: empiece por Trimestres y tendencias. Los filtros de la izquierda afectan a todas las vistas y también al mapa." />
 
-      <nav aria-label="Vistas de análisis" className="sticky top-14 z-[800] -mx-4 mt-5 border-b border-line bg-canvas/95 px-4 py-2 backdrop-blur lg:top-24 lg:mx-0 lg:rounded-xl lg:border lg:bg-surface/95 lg:px-2">
+      <nav aria-label="Vistas de análisis" className="sticky top-[59px] z-[800] -mx-4 mt-5 border-b border-line bg-canvas/95 px-4 py-2 backdrop-blur lg:top-[99px] lg:mx-0 lg:rounded-xl lg:border lg:bg-surface/95 lg:px-2">
         <ul role="tablist" className="flex gap-1.5 overflow-x-auto">
           {TABS.map((t) => {
             const active = t.id === tab;

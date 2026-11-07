@@ -14,6 +14,7 @@ import { TemporalInsightPanel } from '../components/temporal/TemporalInsightPane
 import { useZoneTemporal } from '../hooks/useZoneTemporal';
 import { MONTHS } from '../utils/temporal';
 import { topContributors } from '../utils/ipiv';
+import { pointHex } from '../utils/quarters';
 import { qualityReport } from '../utils/quality';
 import { downloadCsv } from '../utils/download';
 import { formatPct, titleCase } from '../utils/text';
@@ -110,14 +111,14 @@ export function Ranking() {
                     const tc = topContributors(z, 2);
                     return (
                       <tr key={z.id} className="border-t border-line align-top transition-colors duration-150 ease-out hover:bg-canvas/60">
-                            <td className="px-3 py-3 font-mono text-xs text-muted">{z.rank}</td>
+                            <td className="px-3 py-3"><span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-extrabold text-white shadow" style={{ background: pointHex[z.category] }}>{z.rank}</span></td>
                             <td className="px-3 py-3">
                               <Link to={`/zona/${encodeURIComponent(z.id)}`} className="font-medium text-primary hover:underline">{z.distritos.map(titleCase).join(', ') || 'Distrito sin dato'}</Link>
                               <p className="font-mono text-[11px] text-muted">{z.id}</p>
                             </td>
                             <td className="px-3 py-3">
                               <div className="flex items-center gap-2"><span className="w-10 font-semibold tabular-nums">{z.ipiv}</span><PriorityBadge category={z.category} /></div>
-                              <div className="mt-1.5 h-1 w-28 rounded-full bg-canvas"><div className="h-1 rounded-full bg-navy" style={{ width: `${z.ipiv}%` }} /></div>
+                              <div className="mt-1.5 h-1.5 w-28 rounded-full bg-canvas"><div className="h-1.5 rounded-full" style={{ width: `${z.ipiv}%`, background: pointHex[z.category] }} /></div>
                             </td>
                             <td className="px-3 py-3 text-right tabular-nums">{z.siniestros}</td>
                             <td className="px-3 py-3 text-right tabular-nums">{z.fallecidos ?? <span className="text-xs text-muted">Sin dato</span>}</td>

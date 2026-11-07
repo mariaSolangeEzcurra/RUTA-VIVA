@@ -12,14 +12,14 @@ export function MapLegend({ mode, colorBy, defaultOpen = true }: { mode: MapMode
   const [open, setOpen] = useState(defaultOpen);
   const cats: PriorityCategory[] = ['muy_alta', 'alta', 'media', 'baja'];
   return (
-    <div className="pointer-events-auto w-[210px] rounded-xl border border-line bg-surface/95 text-[11px] text-ink shadow-lg backdrop-blur">
+    <div className="pointer-events-auto w-[210px] rounded-2xl border border-line bg-surface/95 text-[11px] text-ink shadow-[0_10px_30px_-12px_rgba(28,39,49,0.35)] backdrop-blur">
       <button type="button" onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between gap-2 px-3 py-2 font-semibold" aria-expanded={open}>
         <span className="flex items-center gap-1.5"><MapIcon className="h-3.5 w-3.5 text-primary" />Leyenda</span>
         <ChevronDownIcon className={`h-3.5 w-3.5 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open &&
       <div className="grid gap-2.5 border-t border-line px-3 pb-3 pt-2">
-          {mode !== 'calor' && (colorBy === 'prioridad' ?
+          {mode !== 'calor' && mode !== 'zonas' && (colorBy === 'prioridad' ?
         <div>
               <p className="mb-1 font-semibold text-muted">Puntos · prioridad de su zona</p>
               <ul className="grid grid-cols-2 gap-x-2 gap-y-1">
@@ -34,7 +34,7 @@ export function MapLegend({ mode, colorBy, defaultOpen = true }: { mode: MapMode
               </ul>
             </div>)
         }
-          {mode !== 'puntos' &&
+          {(mode === 'calor' || mode === 'ambos') &&
         <div>
               <p className="mb-1 font-semibold text-muted">Mapa de calor · densidad</p>
               <div className="h-2.5 rounded-full" style={{ background: MAP_HEAT_CSS }} />
@@ -42,10 +42,15 @@ export function MapLegend({ mode, colorBy, defaultOpen = true }: { mode: MapMode
             </div>
         }
           <div>
-            <p className="mb-1 font-semibold text-muted">Círculos · zonas de concentración</p>
-            <div className="flex flex-wrap gap-1">
-              {cats.map((c) => <span key={c} className="rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ border: `1.5px solid ${pointHex[c]}`, background: `${pointHex[c]}22`, color: '#111827' }}>{categoryLabel[c]}</span>)}
-            </div>
+            <p className="mb-1.5 font-semibold text-muted">Zonas de concentración · el número es su puesto</p>
+            <ul className="grid grid-cols-2 gap-x-2 gap-y-1.5">
+              {cats.map((c, i) =>
+              <li key={c} className="flex items-center gap-1.5">
+                  <span className="flex items-center justify-center rounded-full border-2 border-white text-[10px] font-extrabold text-white shadow" style={{ background: pointHex[c], width: 22 - i * 2, height: 22 - i * 2 }}>{i + 1}</span>
+                  {categoryLabel[c]}
+                </li>
+              )}
+            </ul>
           </div>
           <p className="text-[10px] leading-snug text-muted">Las concentraciones son agrupaciones espaciales, no tramos viales verificados.</p>
         </div>

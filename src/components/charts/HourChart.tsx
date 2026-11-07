@@ -23,7 +23,7 @@ export function HourChart({ views }: {views: SiniestroView[];}) {
           <YAxis tick={{ fontSize: 10, fill: '#576373' }} axisLine={false} tickLine={false} allowDecimals={false} />
           <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} labelFormatter={(l: unknown) => `${String(l)}:00–${String(l)}:59`} />
           <Bar dataKey="siniestros" name="Siniestros" radius={[2, 2, 0, 0]}>
-            {data.map((d) => <Cell key={d.hora} fill={d.noche ? '#0E233D' : '#155E75'} />)}
+            {data.map((d) => <Cell key={d.hora} fill={d.noche ? '#1C2731' : '#0B6E4F'} />)}
           </Bar>
         </BarChart>
       </ResponsiveContainer>

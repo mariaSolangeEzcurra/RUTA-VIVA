@@ -24,7 +24,7 @@ export function ChangeExplainer({ views, series, selected }: Props) {
   const r = useMemo(() => explainChange(views, base, selected), [views, base.year, base.q, selected.year, selected.q]); // eslint-disable-line react-hooks/exhaustive-deps
   const down = r.delta < 0;
   const flat = r.delta === 0;
-  const color = flat ? '#576373' : down ? '#15803D' : '#BE1228';
+  const color = flat ? '#576373' : down ? '#15803D' : '#C81E32';
 
   return (
     <div className="grid gap-4">

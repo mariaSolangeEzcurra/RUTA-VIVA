@@ -12,12 +12,12 @@ interface EmptyStateProps {
 
 export function EmptyState({ title, description, actionLabel, actionTo, icon }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-line bg-surface px-6 py-12 text-center">
-      <div className="mb-3 text-muted">{icon ?? <DatabaseIcon className="h-6 w-6" />}</div>
-      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+    <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-line bg-surface px-6 py-14 text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary">{icon ?? <DatabaseIcon className="h-6 w-6" />}</div>
+      <h3 className="text-base font-bold text-ink">{title}</h3>
       <p className="mt-1 max-w-md text-sm text-muted">{description}</p>
       {actionLabel && actionTo &&
-      <Link to={actionTo} className="mt-4 inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-white transition-colors duration-150 ease-out hover:bg-primary/90">
+      <Link to={actionTo} className="mt-5 inline-flex h-10 items-center rounded-lg bg-primary px-5 text-sm font-bold shadow-sm text-white transition-colors duration-150 ease-out hover:bg-primary/90">
           {actionLabel}
         </Link>
       }

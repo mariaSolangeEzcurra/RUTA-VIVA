@@ -14,7 +14,7 @@ import { QuarterForecast } from './QuarterForecast';
 
 function Step({ n, color, title, subtitle, children, actions }: { n: number; color: string; title: string; subtitle?: string; children: React.ReactNode; actions?: React.ReactNode }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-line bg-surface shadow-sm">
+    <section className="overflow-hidden rounded-2xl border border-line bg-surface">
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-4 py-3" style={{ background: `linear-gradient(90deg, ${color}14, transparent 60%)` }}>
         <div className="flex items-start gap-3">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-sm" style={{ background: color }}>{n}</span>
@@ -71,7 +71,7 @@ export function QuarterlyAnalysis() {
         <QuarterCards profile={profile} active={filters.trimestre as Quarter | null} onToggle={(q) => setFilters({ ...filters, trimestre: filters.trimestre === q ? null : q })} />
       </Step>
 
-      <Step n={2} color="#0E233D" title="Línea de tiempo por trimestres" subtitle="Cada barra es un trimestre (color según T1–T4). La línea oscura suaviza la tendencia; la zona violeta es la proyección. Toque una barra para ver qué cambió.">
+      <Step n={2} color="#1C2731" title="Línea de tiempo por trimestres" subtitle="Cada barra es un trimestre (color según T1–T4). La línea oscura suaviza la tendencia; la zona violeta es la proyección. Toque una barra para ver qué cambió.">
         <QuarterTimelineChart series={series} projection={projection} selected={selected} onSelect={pick} />
       </Step>
 

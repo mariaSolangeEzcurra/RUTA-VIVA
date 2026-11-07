@@ -1,13 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Circle, CircleMarker, LayerGroup, LayersControl, MapContainer, Popup, ScaleControl, TileLayer, Tooltip, ZoomControl, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import type { Marker as LeafletMarker } from 'leaflet';
+import { Circle, CircleMarker, LayerGroup, LayersControl, MapContainer, Marker, Popup, ScaleControl, TileLayer, Tooltip, ZoomControl, useMap } from 'react-leaflet';
 import type { SiniestroView, Zone } from '../../types/data';
 import { categoryLabel } from '../../data/ipivConfig';
 import { AREQUIPA_BBOX } from '../../utils/parsing';
 import { pointHex, quarterInfo, quarterOf } from '../../utils/quarters';
+import { titleCase } from '../../utils/text';
 import { HeatmapLayer } from './HeatmapLayer';
 
-export type MapMode = 'puntos' | 'calor' | 'ambos';
+export type MapMode = 'zonas' | 'puntos' | 'calor' | 'ambos';
 export type ColorBy = 'prioridad' | 'trimestre';
 
 interface AccidentMapProps {
@@ -20,9 +23,13 @@ interface AccidentMapProps {
   fitKey: string;
   mode: MapMode;
   colorBy: ColorBy;
+  activeZoneId: string | null;
+  onZoneSelect: (id: string | null) => void;
 }
 
 const REGION_BOUNDS: [[number, number], [number, number]] = [[AREQUIPA_BBOX.minLat, AREQUIPA_BBOX.minLon], [AREQUIPA_BBOX.maxLat, AREQUIPA_BBOX.maxLon]];
+const ZONE_SIZE = { muy_alta: 36, alta: 31, media: 25, baja: 21 } as const;
+const ZONE_WEIGHT = { muy_alta: 4, alta: 3, media: 2, baja: 1 } as const;
 
 function MapController({ focus, fitPoints, fitKey }: Pick<AccidentMapProps, 'focus' | 'fitPoints' | 'fitKey'>) {
   const map = useMap();
@@ -37,26 +44,83 @@ function MapController({ focus, fitPoints, fitKey }: Pick<AccidentMapProps, 'foc
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitKey]);
   useEffect(() => {
-    if (focus) map.setView([focus.lat, focus.lon], focus.zoom, { animate: true });
+    if (focus) map.flyTo([focus.lat, focus.lon], focus.zoom, { duration: 0.8 });
   }, [focus, map]);
   return null;
 }
 
-export function AccidentMap({ points, zones, selectedCode, onSelect, focus, fitPoints, fitKey, mode, colorBy }: AccidentMapProps) {
-  const priorityZones = zones.filter((z) => z.category === 'muy_alta' || z.category === 'alta');
-  const otherZones = zones.filter((z) => z.category === 'media' || z.category === 'baja');
-  const zoneCircle = (z: Zone, strong: boolean) =>
-  <Circle key={z.id} center={z.centroid} radius={Math.max(z.radiusM, 80)} pathOptions={{ color: pointHex[z.category], weight: strong ? 2.5 : 1.5, dashArray: strong ? undefined : '4 4', fillColor: pointHex[z.category], fillOpacity: strong ? 0.16 : 0.08 }}>
-      <Popup>
-        <div className="min-w-[200px] text-xs">
-          <p className="font-semibold">Zona {z.id}</p>
-          <p className="text-muted">Puesto {z.rank} · IPIV {z.ipiv} · {categoryLabel[z.category]}</p>
-          <p className="mt-1">{z.siniestros} siniestros · {z.fallecidos ?? 'sin dato de'} fallecidos · {z.years.length} año(s)</p>
-          <Link to={`/zona/${encodeURIComponent(z.id)}`} className="mt-2 inline-block font-semibold text-primary">Ver detalle de la zona →</Link>
-        </div>
-      </Popup>
-    </Circle>;
+/** Al elegir una zona en la lista: vuela hasta ella y abre su ficha. */
+function ZoneFocus({ zone, markers }: { zone: Zone | null; markers: React.MutableRefObject<Map<string, LeafletMarker>> }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!zone) return;
+    map.flyTo(zone.centroid, Math.max(map.getZoom(), 14), { duration: 0.9 });
+    const t = window.setTimeout(() => markers.current.get(zone.id)?.openPopup(), 950);
+    return () => window.clearTimeout(t);
+  }, [zone, map, markers]);
+  return null;
+}
 
+function zoneIcon(z: Zone, active: boolean) {
+  const size = ZONE_SIZE[z.category];
+  const pulse = z.category === 'muy_alta' ? ' rv-zone--pulse' : '';
+  return L.divIcon({
+    className: 'rv-zone-icon',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -size / 2],
+    html: `<div class="rv-zone rv-zone--${z.category}${pulse}${active ? ' rv-zone--active' : ''}" style="font-size:${size > 28 ? 14 : 11}px"><span>${z.rank}</span></div>`
+  });
+}
+
+function ZonePopup({ z }: { z: Zone }) {
+  const color = pointHex[z.category];
+  return (
+    <div className="min-w-[220px] font-sans text-xs">
+      <div className="flex items-center gap-2">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-extrabold text-white" style={{ background: color }}>{z.rank}</span>
+        <div>
+          <p className="text-sm font-bold leading-tight text-ink">{titleCase(z.distritos.join(', ') || 'Distrito sin dato')}</p>
+          <p className="text-[11px] font-semibold" style={{ color }}>Prioridad {categoryLabel[z.category].toLowerCase()} · puesto {z.rank}</p>
+        </div>
+      </div>
+      <div className="mt-2">
+        <div className="flex justify-between text-[11px] text-muted"><span>Índice IPIV</span><b className="text-ink">{z.ipiv} / 100</b></div>
+        <div className="mt-0.5 h-2 rounded-full bg-canvas"><div className="h-2 rounded-full" style={{ width: `${z.ipiv}%`, background: color }} /></div>
+      </div>
+      <div className="mt-2 grid grid-cols-3 gap-1 text-center">
+        <div className="rounded-lg bg-canvas py-1"><p className="text-sm font-bold text-ink">{z.siniestros}</p><p className="text-[10px] text-muted">siniestros</p></div>
+        <div className="rounded-lg bg-canvas py-1"><p className="text-sm font-bold text-ink">{z.fallecidos ?? '—'}</p><p className="text-[10px] text-muted">fallecidos</p></div>
+        <div className="rounded-lg bg-canvas py-1"><p className="text-sm font-bold text-ink">{z.years.length}</p><p className="text-[10px] text-muted">años</p></div>
+      </div>
+      {z.dominantClass && <p className="mt-2 text-[11px] text-muted">Tipo más frecuente: <b className="text-ink">{titleCase(z.dominantClass.label)}</b></p>}
+      <Link to={`/zona/${encodeURIComponent(z.id)}`} className="mt-2 flex h-8 items-center justify-center rounded-lg bg-primary text-xs font-bold !text-white">Ver detalle de la zona</Link>
+    </div>);
+}
+
+export function AccidentMap({ points, zones, selectedCode, onSelect, focus, fitPoints, fitKey, mode, colorBy, activeZoneId, onZoneSelect }: AccidentMapProps) {
+  const markers = useRef(new Map<string, LeafletMarker>());
+  const byPriority = useMemo(() => [...zones].sort((a, b) => ZONE_WEIGHT[a.category] - ZONE_WEIGHT[b.category] || b.rank - a.rank), [zones]);
+  const priorityZones = byPriority.filter((z) => z.category === 'muy_alta' || z.category === 'alta');
+  const otherZones = byPriority.filter((z) => z.category === 'media' || z.category === 'baja');
+  const activeZone = zones.find((z) => z.id === activeZoneId) ?? null;
+  const zonesFirst = mode === 'zonas';
+
+  const zoneLayer = (z: Zone) => {
+    const strong = z.category === 'muy_alta' || z.category === 'alta';
+    const active = z.id === activeZoneId;
+    return (
+      <React.Fragment key={z.id}>
+        <Circle center={z.centroid} radius={Math.max(z.radiusM, 120)} interactive={false}
+          pathOptions={{ color: pointHex[z.category], weight: active ? 4 : strong ? 2.5 : 1.5, dashArray: strong ? undefined : '5 5', fillColor: pointHex[z.category], fillOpacity: zonesFirst ? strong ? 0.28 : 0.15 : strong ? 0.16 : 0.08 }} />
+        <Marker position={z.centroid} icon={zoneIcon(z, active)} zIndexOffset={ZONE_WEIGHT[z.category] * 1000 - z.rank}
+          ref={(m) => {if (m) markers.current.set(z.id, m);else markers.current.delete(z.id);}}
+          eventHandlers={{ click: () => onZoneSelect(z.id), popupclose: () => {if (activeZoneId === z.id) onZoneSelect(null);} }}>
+          <Tooltip direction="top" offset={[0, -ZONE_SIZE[z.category] / 2]}>#{z.rank} {titleCase(z.distritos[0] ?? 'Zona')} · {categoryLabel[z.category]}</Tooltip>
+          <Popup autoPanPaddingTopLeft={[24, 300]} autoPanPaddingBottomRight={[24, 180]}><ZonePopup z={z} /></Popup>
+        </Marker>
+      </React.Fragment>);
+  };
 
   const showPoints = mode !== 'calor';
   const styleFor = (p: SiniestroView, selected: boolean) => {
@@ -70,14 +134,21 @@ export function AccidentMap({ points, zones, selectedCode, onSelect, focus, fitP
     } else {
       stroke = '#075985';
     }
-    return { color: selected ? '#0E233D' : stroke, weight: selected ? 3 : 1.5, fillColor: fill, fillOpacity: mode === 'ambos' ? 0.8 : 0.95 };
+    if (zonesFirst && !selected) {
+      return { color: '#ffffff', weight: 0.8, fillColor: colorBy === 'prioridad' && !p.zoneCategory ? '#64748B' : fill, fillOpacity: 0.55 };
+    }
+    return { color: selected ? '#1C2731' : stroke, weight: selected ? 3 : 1.5, fillColor: fill, fillOpacity: mode === 'ambos' ? 0.8 : 0.95 };
   };
 
   return (
     <MapContainer bounds={REGION_BOUNDS} preferCanvas className="h-full w-full" zoomControl={false} scrollWheelZoom>
       <MapController focus={focus} fitPoints={fitPoints} fitKey={fitKey} />
+      <ZoneFocus zone={activeZone} markers={markers} />
       <LayersControl position="topright">
         <LayersControl.BaseLayer checked name="Claro (recomendado)">
+          <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' maxZoom={20} />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="Gris suave">
           <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' maxZoom={20} />
         </LayersControl.BaseLayer>
         <LayersControl.BaseLayer name="OpenStreetMap">
@@ -87,15 +158,15 @@ export function AccidentMap({ points, zones, selectedCode, onSelect, focus, fitP
           <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' maxZoom={20} />
         </LayersControl.BaseLayer>
         <LayersControl.Overlay checked name="Zonas prioritarias (alta y muy alta)">
-          <LayerGroup>{priorityZones.map((z) => zoneCircle(z, true))}</LayerGroup>
+          <LayerGroup>{priorityZones.map(zoneLayer)}</LayerGroup>
         </LayersControl.Overlay>
         <LayersControl.Overlay checked name="Otras concentraciones (media y baja)">
-          <LayerGroup>{otherZones.map((z) => zoneCircle(z, false))}</LayerGroup>
+          <LayerGroup>{otherZones.map(zoneLayer)}</LayerGroup>
         </LayersControl.Overlay>
       </LayersControl>
       <ZoomControl position="topright" />
       <ScaleControl position="topright" imperial={false} maxWidth={90} />
-      {mode !== 'puntos' && <HeatmapLayer points={points} />}
+      {(mode === 'calor' || mode === 'ambos') && <HeatmapLayer points={points} />}
       {showPoints &&
       <LayerGroup>
           {points.map((p) => {
@@ -105,7 +176,7 @@ export function AccidentMap({ points, zones, selectedCode, onSelect, focus, fitP
             <CircleMarker
               key={`${p.codigo}-${colorBy}-${mode}`}
               center={[p.lat as number, p.lon as number]}
-              radius={selected ? 9 : mode === 'ambos' ? 4.5 : 6}
+              radius={selected ? 9 : zonesFirst ? 3.5 : mode === 'ambos' ? 4.5 : 6}
               pathOptions={styleFor(p, selected)}
               eventHandlers={{ click: () => onSelect(p.codigo) }}>
                 <Tooltip direction="top" offset={[0, -4]}>{p.codigo} · {p.fecha ?? 'sin fecha'}{q ? ` (T${q})` : ''} · {p.clase ?? 'sin clase'}</Tooltip>

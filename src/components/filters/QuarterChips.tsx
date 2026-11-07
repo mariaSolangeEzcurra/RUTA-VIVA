@@ -30,7 +30,7 @@ export function QuarterChips({ value, onChange, size = 'md', showMonths = true, 
             className={`flex flex-col items-center rounded-md border font-semibold leading-tight transition-all duration-150 ease-out ${sm ? 'px-1 py-1 text-[11px]' : 'px-1 py-1.5 text-xs'} ${active ? 'text-white shadow-md' : 'bg-surface hover:-translate-y-px'}`}
             style={active ? { background: info.color, borderColor: info.color } : { borderColor: `${info.color}66`, color: info.color }}>
             <span>{info.short}</span>
-            {showMonths && !sm && <span className={`text-[9px] font-medium ${active ? 'text-white/85' : 'text-muted'}`}>{info.months}</span>}
+            {showMonths && !sm && <span className={`whitespace-nowrap text-[8.5px] font-medium tracking-tight ${active ? 'text-white/85' : 'text-muted'}`}>{info.months.replace(/ /g, '')}</span>}
             {counts && <span className={`text-[9px] font-medium tabular-nums ${active ? 'text-white/85' : 'text-muted'}`}>{counts[q] ?? 0}</span>}
           </button>);
       })}

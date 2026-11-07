@@ -28,8 +28,8 @@ export function HistoricalChart({ rows }: {rows: HistoricoRow[];}) {
           <YAxis tick={{ fontSize: 11, fill: '#576373' }} axisLine={false} tickLine={false} tickFormatter={(v: number) => v.toLocaleString('es-PE')} />
           <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} formatter={(v: unknown, n: unknown) => [typeof v === 'number' ? v.toLocaleString('es-PE') : 'Sin dato', String(n)]} />
           <Legend wrapperStyle={{ fontSize: 11 }} />
-          {has('siniestros') && <Line dataKey="siniestros" name="Siniestros (todos)" stroke="#155E75" strokeWidth={2} dot={false} connectNulls={false} />}
-          {has('fallecidos') && <Line dataKey="fallecidos" name="Fallecidos" stroke="#BE1228" strokeWidth={2} dot={false} connectNulls={false} />}
+          {has('siniestros') && <Line dataKey="siniestros" name="Siniestros (todos)" stroke="#0B6E4F" strokeWidth={2} dot={false} connectNulls={false} />}
+          {has('fallecidos') && <Line dataKey="fallecidos" name="Fallecidos" stroke="#C81E32" strokeWidth={2} dot={false} connectNulls={false} />}
           {has('lesionados') && <Line dataKey="lesionados" name="Lesionados" stroke="#B45309" strokeWidth={2} dot={false} connectNulls={false} />}
         </LineChart>
       </ResponsiveContainer>

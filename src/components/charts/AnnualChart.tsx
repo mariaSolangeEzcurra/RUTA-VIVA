@@ -21,8 +21,8 @@ export function AnnualChart({ views, height = 280 }: {views: SiniestroView[];hei
         <YAxis tick={{ fontSize: 11, fill: '#576373' }} axisLine={false} tickLine={false} allowDecimals={false} />
         <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6, borderColor: '#dee3e9' }} formatter={(v: unknown, n: unknown) => [typeof v === 'number' ? v.toLocaleString('es-PE') : 'Sin dato', String(n)]} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
-        <Bar dataKey="siniestros" name="Siniestros fatales" fill="#155E75" radius={[3, 3, 0, 0]} maxBarSize={44} />
-        <Line dataKey="fallecidos" name="Fallecidos" stroke="#BE1228" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} />
+        <Bar dataKey="siniestros" name="Siniestros fatales" fill="#0B6E4F" radius={[3, 3, 0, 0]} maxBarSize={44} />
+        <Line dataKey="fallecidos" name="Fallecidos" stroke="#C81E32" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} />
         {hasL && <Line dataKey="lesionados" name="Lesionados" stroke="#B45309" strokeWidth={2} strokeDasharray="4 3" dot={{ r: 3 }} connectNulls={false} />}
       </ComposedChart>
     </ResponsiveContainer>);

@@ -1,8 +1,8 @@
+import { heatColor, heatText, pointHex } from '../../utils/quarters';
 import React from 'react';
 import type { Zone } from '../../types/data';
 import type { MonthStat } from '../../utils/temporal';
 import { MONTHS, MONTHS_SHORT } from '../../utils/temporal';
-import { categoryHex } from '../../data/ipivConfig';
 import { titleCase } from '../../utils/text';
 
 export interface ZoneMonthRow {
@@ -38,7 +38,7 @@ export function ZoneMonthMatrix({ rows, selectedId, onSelect }: ZoneMonthMatrixP
               <tr key={r.zone.id} className={active ? 'bg-primary-soft/60' : ''}>
                 <th scope="row" className="max-w-[200px] py-0.5 pr-2 text-left font-normal">
                   <button type="button" onClick={() => onSelect(r.zone.id)} aria-pressed={active} className="flex w-full items-center gap-1.5 truncate text-left hover:text-primary">
-                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: categoryHex[r.zone.category] }} aria-hidden />
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: pointHex[r.zone.category] }} aria-hidden />
                     <span className="font-mono text-muted">#{r.zone.rank}</span>
                     <span className={`truncate ${active ? 'font-semibold text-primary' : 'text-ink'}`}>{titleCase(r.label)}</span>
                   </button>
@@ -47,7 +47,7 @@ export function ZoneMonthMatrix({ rows, selectedId, onSelect }: ZoneMonthMatrixP
                 <td key={m.month} className="px-0.5 py-0.5">
                     <button type="button" onClick={() => onSelect(r.zone.id)} tabIndex={-1} aria-hidden
                   className="flex h-6 w-full items-center justify-center rounded tabular-nums"
-                  style={{ background: m.total ? `rgba(14,35,61,${0.1 + 0.8 * m.total / max})` : '#f3f5f8', color: m.total / max > 0.5 ? '#fff' : '#111827' }}
+                  style={{ background: m.total ? heatColor(m.total / max) : '#f3f5f8', color: m.total ? heatText(m.total / max) : '#111827' }}
                   title={`${MONTHS[m.month]}: ${m.total}`}>
                       {m.total || ''}
                     </button>

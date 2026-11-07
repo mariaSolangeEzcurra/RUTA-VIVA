@@ -70,7 +70,7 @@ export function QuarterTimelineChart({ series, projection, selected, onSelect, h
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#576373' }} axisLine={false} tickLine={false} interval={0} angle={-40} textAnchor="end" height={44} />
           <YAxis tick={{ fontSize: 11, fill: '#576373' }} axisLine={false} tickLine={false} allowDecimals={false} />
           <Tooltip
-            cursor={{ fill: '#0E233D', fillOpacity: 0.05 }}
+            cursor={{ fill: '#1C2731', fillOpacity: 0.05 }}
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
               const r = payload[0].payload as Row;
@@ -85,18 +85,18 @@ export function QuarterTimelineChart({ series, projection, selected, onSelect, h
             }} />
           <Legend wrapperStyle={{ fontSize: 11 }} payload={[
           { value: 'Siniestros registrados (color = trimestre)', type: 'square', color: '#0891B2' },
-          { value: 'Promedio móvil 4 trimestres', type: 'line', color: '#0E233D' },
+          { value: 'Promedio móvil 4 trimestres', type: 'line', color: '#1C2731' },
           { value: 'Proyección y rango probable', type: 'square', color: '#A78BFA' }]} />
           <Bar dataKey="valor" name="Siniestros" radius={[4, 4, 0, 0]} maxBarSize={28} cursor="pointer">
             {data.map((d) =>
             <Cell key={d.key} fill={quarterInfo[d.q].color}
             fillOpacity={d.esProy ? 0.28 : d.parcial ? 0.4 : selKey && selKey !== d.key ? 0.55 : 1}
-            stroke={selKey === d.key ? '#0E233D' : d.esProy ? '#7C3AED' : d.parcial ? quarterInfo[d.q].color : undefined}
+            stroke={selKey === d.key ? '#1C2731' : d.esProy ? '#7C3AED' : d.parcial ? quarterInfo[d.q].color : undefined}
             strokeWidth={selKey === d.key ? 2.5 : 1.2} strokeDasharray={d.esProy || d.parcial ? '3 2' : undefined} />
             )}
             <ErrorBar dataKey="err" width={6} strokeWidth={1.5} stroke="#6D28D9" direction="y" />
           </Bar>
-          <Line dataKey="media" name="Promedio móvil" stroke="#0E233D" strokeWidth={2.5} dot={false} connectNulls />
+          <Line dataKey="media" name="Promedio móvil" stroke="#1C2731" strokeWidth={2.5} dot={false} connectNulls />
         </ComposedChart>
       </ResponsiveContainer>
     </div>);
