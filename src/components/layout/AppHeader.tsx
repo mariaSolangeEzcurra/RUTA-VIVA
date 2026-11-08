@@ -21,6 +21,7 @@ export function AppHeader() {
   const [open, setOpen] = useState(false);
   const hasData = state.dataVersion > 0;
 
+  //const status = !ready ? 'Cargando base local…' : hasData ? `Datos v${state.dataVersion} · ${formatDateTime(state.lastProcessedAt)}` : 'Sin datos importados';
 
   return (
     <header className="sticky top-0 z-[1100] bg-navy text-white shadow-[0_6px_20px_-12px_rgba(0,0,0,0.6)]">
