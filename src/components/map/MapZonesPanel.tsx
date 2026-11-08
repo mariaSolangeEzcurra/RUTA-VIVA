@@ -89,7 +89,6 @@ export function MapZonesPanel({ zones, activeZoneId, onSelect, onClose, hasAnaly
                 </li>);
           })}
           </ol>
-          <p className="border-t border-line px-4 py-2 text-[10px] leading-snug text-muted">IPIV: índice de prioridad (0–100) según fallecidos, recurrencia, concentración y usuarios vulnerables. Toque una zona para ubicarla en el mapa.</p>
         </>
       }
     </div>);
