@@ -52,11 +52,7 @@ export function KpiStrip({ variant = 'page' }: {variant?: 'page' | 'overlay' | '
             </div>);
         })}
       </div>
-      {!compact &&
-      <p className="mt-2 px-1 text-[11px] text-muted">
-          Siniestros fatales registrados (datos preliminares). Fallecidos y lesionados se cuentan por persona vinculada o, en su defecto, por el registro del siniestro, sin duplicar.
-        </p>
-      }
+
     </div>);
 
 }
