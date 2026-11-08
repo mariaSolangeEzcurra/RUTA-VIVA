@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { PauseIcon, PlayIcon, RotateCcwIcon } from 'lucide-react';
+import { ChevronDownIcon, PauseIcon, PlayIcon, RotateCcwIcon } from 'lucide-react';
 import type { QuarterPoint, Quarter } from '../../utils/quarters';
 import { periodLabel, quarterInfo } from '../../utils/quarters';
 
@@ -15,6 +15,7 @@ interface MapTimelineProps {
 /** Línea de tiempo trimestral sobre el mapa: cada barra es un trimestre; al tocarla el mapa muestra solo ese periodo. */
 export function MapTimeline({ series, yearFrom, yearTo, trimestre, onSelect, onReset }: MapTimelineProps) {
   const [playing, setPlaying] = useState(false);
+  const [open, setOpen] = useState(() => typeof window === 'undefined' || window.innerHeight >= 700);
   const max = Math.max(1, ...series.map((s) => s.count));
   const single = yearFrom !== null && yearFrom === yearTo && trimestre !== null;
   const selectedIdx = single ? series.findIndex((s) => s.year === yearFrom && s.q === trimestre) : -1;
@@ -53,8 +54,8 @@ export function MapTimeline({ series, yearFrom, yearTo, trimestre, onSelect, onR
   const current = selectedIdx >= 0 ? series[selectedIdx] : null;
 
   return (
-    <div className="pointer-events-auto rounded-2xl border border-line bg-surface/95 p-2.5 shadow-[0_10px_30px_-12px_rgba(15,42,61,0.35)] backdrop-blur sm:p-3">
-      <div className="mb-2 flex flex-wrap items-center gap-2">
+    <div className="rounded-2xl border border-line/80 bg-surface px-3 py-2.5 sm:px-4">
+      <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={() => setPlaying((p) => !p)}
           className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-white shadow-sm transition-colors ${playing ? 'bg-fatal hover:bg-fatal/90' : 'bg-primary hover:bg-primary/90'}`}
           aria-label={playing ? 'Pausar animación' : 'Reproducir trimestres en el mapa'}>
@@ -66,19 +67,23 @@ export function MapTimeline({ series, yearFrom, yearTo, trimestre, onSelect, onR
             Línea de tiempo por trimestres
             {current && <span className="ml-2 rounded-full px-2 py-0.5 text-[11px] text-white" style={{ background: quarterInfo[current.q].color }}>{periodLabel(current.year, current.q)} · {current.count} siniestros</span>}
           </p>
-          <p className="hidden truncate text-[11px] text-muted sm:block">Toque un trimestre para verlo en el mapa. La altura de cada barra es el número de siniestros.</p>
+          <p className="hidden truncate text-[11px] text-muted md:block">Toque un trimestre para verlo en el mapa; la altura de cada barra es el número de siniestros.</p>
         </div>
         {anyPeriod &&
         <button type="button" onClick={() => { setPlaying(false); onReset(); }} className="inline-flex h-8 items-center gap-1 rounded-full border border-line px-3 text-xs font-medium text-primary hover:bg-canvas">
             <RotateCcwIcon className="h-3 w-3" /> Todo el periodo
           </button>
         }
+        <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="inline-flex h-8 items-center gap-1 rounded-full bg-canvas px-3 text-xs font-semibold text-muted hover:text-ink">
+          {open ? 'Ocultar' : 'Mostrar'} barras <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
       </div>
-      <div ref={scrollRef} className="overflow-x-auto pb-1">
+      {open &&
+      <div ref={scrollRef} className="scrollbar-thin mt-2 overflow-x-auto pb-1">
         <div className="flex min-w-max items-end gap-3">
           {years.map((y) =>
           <div key={y} className="flex flex-col items-center">
-              <div className="flex h-14 items-end gap-0.5">
+              <div className="flex h-12 items-end gap-0.5">
                 {series.map((s, i) => s.year !== y ? null :
               <button key={s.key} type="button" data-idx={i} onClick={() => { setPlaying(false); onSelect(s.year, s.q); }}
               title={`${periodLabel(s.year, s.q)} (${quarterInfo[s.q].months}): ${s.count} siniestros${s.status === 'parcial' ? ' · trimestre incompleto' : ''}`}
@@ -88,7 +93,7 @@ export function MapTimeline({ series, yearFrom, yearTo, trimestre, onSelect, onR
                     <span className={`mb-0.5 text-[9px] font-semibold tabular-nums group-hover:text-ink ${i === selectedIdx ? 'text-ink' : 'text-muted'}`}>{s.count}</span>
                     <span className="w-full rounded-t-md transition-all duration-200 group-hover:brightness-110"
                 style={{
-                  height: `${Math.max(6, (s.count / max) * 38)}px`,
+                  height: `${Math.max(5, (s.count / max) * 30)}px`,
                   background: s.status === 'parcial' ? `repeating-linear-gradient(45deg, ${quarterInfo[s.q].color}, ${quarterInfo[s.q].color} 3px, ${quarterInfo[s.q].soft} 3px, ${quarterInfo[s.q].soft} 6px)` : quarterInfo[s.q].color,
                   opacity: anyPeriod && !inRange(s) ? 0.25 : 1,
                   outline: i === selectedIdx ? '2px solid #0F2A3D' : undefined,
@@ -104,6 +109,6 @@ export function MapTimeline({ series, yearFrom, yearTo, trimestre, onSelect, onR
             </div>
           )}
         </div>
-      </div>
+      </div>}
     </div>);
 }

@@ -35,7 +35,7 @@ export function ZoneDetail() {
   }, [zone, snap, membersOf]);
 
   if (!zone || !snap || !data) {
-    return <main className="mx-auto w-full max-w-3xl px-4 py-12"><EmptyState title="Zona no encontrada" description="La zona no existe en el último análisis. Puede haber cambiado tras un reprocesamiento con nuevos datos o parámetros." actionLabel="Ver ranking IPIV" actionTo="/ranking" /></main>;
+    return <main className="page"><div className="mx-auto max-w-3xl py-6"><EmptyState title="Zona no encontrada" description="La zona no existe en el último análisis. Puede haber cambiado tras un reprocesamiento con nuevos datos o parámetros." actionLabel="Ver ranking IPIV" actionTo="/ranking" /></div></main>;
   }
 
   const zoneInterventions = state.interventions.filter((i) => i.zoneId === zone.id);

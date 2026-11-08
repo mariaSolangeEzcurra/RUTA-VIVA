@@ -1,19 +1,19 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertOctagonIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, SlidersHorizontalIcon } from 'lucide-react';
+import { AlertOctagonIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PanelRightCloseIcon, SlidersHorizontalIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import { useData } from '../contexts/DataContext';
 import { useZoneTools } from '../hooks/useZoneTools';
 import { AccidentMap } from '../components/map/AccidentMap';
 import type { ColorBy, MapMode } from '../components/map/AccidentMap';
-import { MapToolbar } from '../components/map/MapToolbar';
+import { BasemapPicker, MapToolbar } from '../components/map/MapToolbar';
 import { MapTimeline } from '../components/map/MapTimeline';
 import { MapLegend } from '../components/map/MapLegend';
 import { MapZonesPanel } from '../components/map/MapZonesPanel';
 import { SiniestroDetail } from '../components/map/SiniestroDetail';
 import { FilterPanel } from '../components/filters/FilterPanel';
 import { EmptyState } from '../components/ui/EmptyState';
-import { toast } from 'sonner';
 import { BASEMAPS, DEFAULT_BASEMAP, FALLBACK_ORDER } from '../components/map/basemaps';
 import { applyFilters, activeFilterCount, withoutPeriod } from '../utils/filters';
 import { datasetCoverage } from '../utils/temporal';
@@ -22,6 +22,7 @@ import type { Quarter } from '../utils/quarters';
 
 const ease = [0.23, 1, 0.32, 1] as const;
 const width = () => typeof window === 'undefined' ? 1440 : window.innerWidth;
+const isDesktop = () => width() >= 1024;
 
 export function MapPage() {
   const { filtered, filters, setFilters, state, views, ready } = useData();
@@ -29,19 +30,21 @@ export function MapPage() {
   const [searchParams] = useSearchParams();
   const [selected, setSelected] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(() => width() >= 1536);
-  const [zonesOpen, setZonesOpen] = useState(() => width() >= 1024);
+  const [panelOpen, setPanelOpen] = useState(() => isDesktop());
+  const [panelTab, setPanelTab] = useState<'zonas' | 'leyenda'>('zonas');
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [mode, setMode] = useState<MapMode>('zonas');
   const [colorBy, setColorBy] = useState<ColorBy>('prioridad');
+  const [showMinor, setShowMinor] = useState(true);
+  const [focus, setFocus] = useState<{lat: number;lon: number;zoom: number;key: number;} | null>(null);
   const [basemap, setBasemap] = useState<string>(() => {
     try {return localStorage.getItem('rv-basemap') ?? DEFAULT_BASEMAP;} catch {return DEFAULT_BASEMAP;}
   });
-  const [showMinor, setShowMinor] = useState(true);
+  const tried = useRef(new Set<string>());
   const changeBasemap = (id: string, persist = true) => {
     setBasemap(id);
     if (persist) try {localStorage.setItem('rv-basemap', id);} catch {/* sin almacenamiento */}
   };
-  const tried = React.useRef(new Set<string>());
   const onBasemapFail = (failed: string) => {
     tried.current.add(failed);
     const next = FALLBACK_ORDER.find((id) => !tried.current.has(id));
@@ -52,12 +55,10 @@ export function MapPage() {
     changeBasemap(next, false);
     toast.info(`El mapa base «${BASEMAPS.find((b) => b.id === failed)?.label}» no respondió; se cambió a «${BASEMAPS.find((b) => b.id === next)?.label}».`);
   };
-  const [focus, setFocus] = useState<{lat: number;lon: number;zoom: number;key: number;} | null>(null);
+
   const coverage = useMemo(() => datasetCoverage(views), [views]);
   const periodBase = useMemo(() => applyFilters(views, withoutPeriod(filters)), [views, filters]);
   const series = useMemo(() => quarterSeries(periodBase, coverage), [periodBase, coverage]);
-  const isMobile = width() < 640;
-
   const points = useMemo(() => filtered.filter((v) => v.coordStatus === 'valida' && v.lat !== null && v.lon !== null), [filtered]);
   const zones = useMemo(() => {
     const ids = new Set(filtered.map((v) => v.zoneId).filter(Boolean));
@@ -77,91 +78,103 @@ export function MapPage() {
 
   const selectZone = (id: string | null) => {
     setActiveZoneId(id);
-    if (id && width() < 1024) setZonesOpen(false);
+    if (id && !isDesktop()) setPanelOpen(false);
+  };
+  const openPanel = (tab: 'zonas' | 'leyenda') => {
+    if (panelOpen && panelTab === tab) {setPanelOpen(false);return;}
+    setPanelTab(tab);
+    setPanelOpen(true);
   };
 
   if (ready && views.length === 0) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-4 py-12">
+      <main className="page"><div className="mx-auto max-w-3xl py-6">
         <EmptyState title="El mapa no tiene siniestros que mostrar" description="Importe el archivo de siniestros fatales desde Gestión de datos; quedará guardado y no tendrá que volver a cargarlo." actionLabel="Ir a Gestión de datos" actionTo="/datos" />
-      </main>);
+      </div></main>);
   }
 
-  return (
-    <main className="relative flex h-[calc(100vh-59px)] min-h-[560px] w-full overflow-hidden lg:h-[calc(100vh-99px)]">
-      <h1 className="sr-only">Mapa de siniestralidad – Región Arequipa</h1>
-      <AnimatePresence initial={false}>
-        {filtersOpen &&
-        <motion.aside key="filters" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.2, ease }}
-        className="scrollbar-thin absolute inset-y-0 left-0 z-[1001] w-[88vw] max-w-[310px] shrink-0 overflow-y-auto border-r border-line bg-surface p-4 shadow-2xl lg:static lg:w-72 lg:shadow-none" aria-label="Filtros">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-[15px] font-bold"><SlidersHorizontalIcon className="h-4 w-4 text-primary" />Filtros</h2>
-              <button type="button" onClick={() => setFiltersOpen(false)} className="rounded-lg p-1 text-muted hover:bg-canvas" aria-label="Ocultar filtros"><PanelLeftCloseIcon className="h-4 w-4" /></button>
-            </div>
-            <FilterPanel compact />
-            {hidden > 0 && <p className="mt-4 rounded-lg bg-canvas px-3 py-2 text-[11px] text-muted">{hidden} siniestros del conjunto filtrado no se muestran por coordenadas faltantes o inválidas.</p>}
-          </motion.aside>
-        }
-      </AnimatePresence>
+  const chipBtn = 'inline-flex h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-bold transition-colors';
 
-      <div className="relative min-w-0 flex-1">
-        <AccidentMap points={points} zones={zones} selectedCode={selected} onSelect={setSelected} focus={focus} fitPoints={fitPoints} fitKey={fitKey}
-        mode={mode} colorBy={colorBy} activeZoneId={activeZoneId} onZoneSelect={selectZone}
-        basemap={basemap} onBasemapFail={onBasemapFail} showMinorZones={showMinor} />
-        <div className="pointer-events-none absolute inset-x-3 top-3 z-[900] pr-14 sm:inset-x-4 sm:top-4">
-          <MapToolbar mode={mode} onMode={setMode} colorBy={colorBy} onColorBy={setColorBy}
-          trimestre={filters.trimestre as Quarter | null} onTrimestre={(q) => setFilters({ ...filters, trimestre: q })}
-          basemap={basemap} onBasemap={(id) => {tried.current.clear();changeBasemap(id);}}
-          leading={(!filtersOpen || !zonesOpen) &&
-          <div className="flex items-center gap-2 self-end">
-                {!filtersOpen &&
-            <button type="button" onClick={() => setFiltersOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-3.5 text-xs font-bold text-ink hover:bg-canvas" aria-label="Mostrar filtros">
-                    <PanelLeftOpenIcon className="h-4 w-4 text-primary" /> Filtros
-                    {nFilters > 0 && <span className="rounded-full bg-primary px-1.5 py-px text-[10px] text-white">{nFilters}</span>}
-                  </button>
+  return (
+    <main className="page-x flex h-[calc(100dvh-59px)] min-h-[520px] flex-col gap-3 py-3 lg:h-[calc(100dvh-99px)] lg:py-4">
+      <h1 className="sr-only">Mapa de siniestralidad – Región Arequipa</h1>
+
+      <MapToolbar mode={mode} onMode={setMode} colorBy={colorBy} onColorBy={setColorBy}
+      trimestre={filters.trimestre as Quarter | null} onTrimestre={(q) => setFilters({ ...filters, trimestre: q })}
+      leading={
+      <button type="button" onClick={() => setFiltersOpen((o) => !o)} aria-pressed={filtersOpen}
+      className={`${chipBtn} ${filtersOpen ? 'bg-primary text-white' : 'border border-line bg-surface text-ink hover:bg-canvas'}`}>
+            {filtersOpen ? <PanelLeftCloseIcon className="h-4 w-4" /> : <PanelLeftOpenIcon className="h-4 w-4 text-primary" />} Filtros
+            {nFilters > 0 && <span className={`rounded-full px-1.5 py-px text-[10px] ${filtersOpen ? 'bg-white/25' : 'bg-primary text-white'}`}>{nFilters}</span>}
+          </button>
+      }
+      trailing={
+      <>
+            <button type="button" onClick={() => openPanel('leyenda')} aria-pressed={panelOpen && panelTab === 'leyenda'}
+        className={`${chipBtn} hidden sm:inline-flex ${panelOpen && panelTab === 'leyenda' ? 'bg-navy text-white' : 'border border-line bg-surface text-ink hover:bg-canvas'}`}>
+              Leyenda y mapa base
+            </button>
+            <button type="button" onClick={() => openPanel('zonas')} aria-pressed={panelOpen && panelTab === 'zonas'}
+        className={`${chipBtn} ${panelOpen && panelTab === 'zonas' ? 'bg-[#BE123C] text-white' : 'bg-[#E11D48] text-white hover:bg-[#BE123C]'}`}>
+              {panelOpen && panelTab === 'zonas' ? <PanelRightCloseIcon className="h-4 w-4" /> : <AlertOctagonIcon className="h-4 w-4" />}
+              {priorityCount}<span className="hidden sm:inline"> prioritarias</span>
+            </button>
+          </>
+      } />
+
+      <div className="relative flex min-h-0 flex-1 gap-3 lg:gap-4">
+        <AnimatePresence initial={false}>
+          {filtersOpen &&
+          <>
+              <motion.div key="fb" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[1150] bg-navy/40 lg:hidden" onClick={() => setFiltersOpen(false)} />
+              <motion.aside key="filters" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.2, ease }}
+            className="scrollbar-thin fixed inset-y-0 left-0 z-[1200] w-[88vw] max-w-[320px] overflow-y-auto bg-surface p-4 shadow-2xl lg:static lg:z-auto lg:w-72 lg:shrink-0 lg:rounded-2xl lg:border lg:border-line/80 lg:shadow-none" aria-label="Filtros">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="flex items-center gap-2 text-[15px] font-bold"><SlidersHorizontalIcon className="h-4 w-4 text-primary" />Filtros</h2>
+                  <button type="button" onClick={() => setFiltersOpen(false)} className="rounded-lg p-1 text-muted hover:bg-canvas" aria-label="Ocultar filtros"><PanelLeftCloseIcon className="h-4 w-4" /></button>
+                </div>
+                <FilterPanel compact />
+                {hidden > 0 && <p className="mt-4 rounded-lg bg-canvas px-3 py-2 text-[11px] text-muted">{hidden} siniestros del conjunto filtrado no se muestran por coordenadas faltantes o inválidas.</p>}
+              </motion.aside>
+            </>
+          }
+        </AnimatePresence>
+
+        <div className="relative min-w-0 flex-1 overflow-hidden rounded-2xl border border-line/80 bg-[#dfe4e8]">
+          <AccidentMap points={points} zones={zones} selectedCode={selected} onSelect={setSelected} focus={focus} fitPoints={fitPoints} fitKey={fitKey}
+          mode={mode} colorBy={colorBy} activeZoneId={activeZoneId} onZoneSelect={selectZone}
+          basemap={basemap} onBasemapFail={onBasemapFail} showMinorZones={showMinor} />
+          <AnimatePresence>
+            {item &&
+            <motion.div key={item.codigo} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 16 }} transition={{ duration: 0.22, ease }}
+            className="absolute inset-y-0 right-0 z-[1000] w-full max-w-sm border-l border-line shadow-2xl">
+                <SiniestroDetail item={item} zone={zone} dataVersion={state.dataVersion} processedAt={state.lastProcessedAt}
+              onClose={() => setSelected(null)}
+              onCenter={() => item.lat !== null && item.lon !== null && setFocus({ lat: item.lat, lon: item.lon, zoom: 16, key: Date.now() })}
+              onFicha={zone ? () => downloadFicha(zone) : null} />
+              </motion.div>
             }
-                {!zonesOpen &&
-            <button type="button" onClick={() => setZonesOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#E11D48] px-3.5 text-xs font-bold text-white shadow-sm hover:bg-[#BE123C]" aria-label="Mostrar zonas prioritarias">
-                    <AlertOctagonIcon className="h-4 w-4" /> {priorityCount} prioritarias
-                  </button>
-            }
-              </div>
-          } />
+          </AnimatePresence>
         </div>
-        <div className="pointer-events-none absolute bottom-[184px] left-3 z-[900] sm:left-4">
-          <MapLegend mode={mode} colorBy={colorBy} defaultOpen={!isMobile && width() >= 1280} showMinor={showMinor} onShowMinor={setShowMinor} />
-        </div>
-        <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-[900] sm:bottom-4 sm:left-4 sm:right-4">
-          <MapTimeline series={series} yearFrom={filters.yearFrom} yearTo={filters.yearTo} trimestre={filters.trimestre as Quarter | null}
-          onSelect={(y, q) => setFilters({ ...filters, yearFrom: y, yearTo: y, trimestre: q })}
-          onReset={() => setFilters(withoutPeriod(filters))} />
-        </div>
+
+        <AnimatePresence initial={false}>
+          {panelOpen &&
+          <>
+              <motion.div key="pb" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[1150] bg-navy/40 lg:hidden" onClick={() => setPanelOpen(false)} />
+              <motion.aside key="panel" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.2, ease }}
+            className="fixed inset-y-0 right-0 z-[1200] w-[92vw] max-w-[340px] overflow-hidden bg-surface shadow-2xl lg:static lg:z-auto lg:w-80 lg:shrink-0 lg:rounded-2xl lg:border lg:border-line/80 lg:shadow-none" aria-label="Zonas y leyenda">
+                <MapZonesPanel zones={zones} activeZoneId={activeZoneId} onSelect={selectZone} onClose={() => setPanelOpen(false)} hasAnalysis={!!state.analysis}
+              tab={panelTab} onTab={setPanelTab}
+              legend={<div className="grid gap-5"><MapLegend bare mode={mode} colorBy={colorBy} showMinor={showMinor} onShowMinor={setShowMinor} /><div className="border-t border-line pt-4"><BasemapPicker value={basemap} onChange={(id) => {tried.current.clear();changeBasemap(id);}} /></div></div>} />
+              </motion.aside>
+            </>
+          }
+        </AnimatePresence>
       </div>
 
-      <AnimatePresence initial={false}>
-        {zonesOpen &&
-        <motion.aside key="zones" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.2, ease }}
-        className="absolute inset-y-0 right-0 z-[1001] w-[92vw] max-w-[340px] shrink-0 border-l border-line shadow-2xl lg:static lg:w-80 lg:shadow-none" aria-label="Zonas prioritarias">
-            <MapZonesPanel zones={zones} activeZoneId={activeZoneId} onSelect={selectZone} onClose={() => setZonesOpen(false)} hasAnalysis={!!state.analysis} />
-          </motion.aside>
-        }
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {item &&
-        <motion.div key={item.codigo} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 16 }} transition={{ duration: 0.22, ease }}
-        className="absolute inset-y-0 right-0 z-[1002] w-full max-w-sm border-l border-line shadow-2xl">
-            <SiniestroDetail
-            item={item}
-            zone={zone}
-            dataVersion={state.dataVersion}
-            processedAt={state.lastProcessedAt}
-            onClose={() => setSelected(null)}
-            onCenter={() => item.lat !== null && item.lon !== null && setFocus({ lat: item.lat, lon: item.lon, zoom: 16, key: Date.now() })}
-            onFicha={zone ? () => downloadFicha(zone) : null} />
-          </motion.div>
-        }
-      </AnimatePresence>
+      <MapTimeline series={series} yearFrom={filters.yearFrom} yearTo={filters.yearTo} trimestre={filters.trimestre as Quarter | null}
+      onSelect={(y, q) => setFilters({ ...filters, yearFrom: y, yearTo: y, trimestre: q })}
+      onReset={() => setFilters(withoutPeriod(filters))} />
     </main>);
 
 }

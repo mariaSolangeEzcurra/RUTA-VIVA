@@ -24,7 +24,7 @@ export function Dashboard() {
 
   if (ready && !hasData) {
     return (
-      <main className="page max-w-[1200px]">
+      <main className="page">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr]">
           <div>
             <p className="text-xs font-medium text-primary">Piloto Región Arequipa · 2021–2025</p>

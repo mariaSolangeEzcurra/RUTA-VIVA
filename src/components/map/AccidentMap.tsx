@@ -53,6 +53,18 @@ function MapController({ focus, fitPoints, fitKey }: Pick<AccidentMapProps, 'foc
   return null;
 }
 
+/** Ajusta el mapa cuando cambia el tamaño de su contenedor (paneles que se abren o cierran). */
+function SizeWatcher() {
+  const map = useMap();
+  useEffect(() => {
+    const el = map.getContainer();
+    const ro = new ResizeObserver(() => map.invalidateSize({ pan: false }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [map]);
+  return null;
+}
+
 /** Al elegir una zona en la lista: vuela hasta ella y abre su ficha. */
 function ZoneFocus({ zone, markers }: { zone: Zone | null; markers: React.MutableRefObject<Map<string, LeafletMarker>> }) {
   const map = useMap();
@@ -138,7 +150,7 @@ export function AccidentMap({ points, zones, selectedCode, onSelect, focus, fitP
           ref={(m) => {if (m) markers.current.set(z.id, m);else markers.current.delete(z.id);}}
           eventHandlers={{ click: () => onZoneSelect(z.id), popupclose: () => {if (activeZoneId === z.id) onZoneSelect(null);} }}>
           <Tooltip direction="top" offset={[0, -ZONE_SIZE[z.category] / 2]}>#{z.rank} {titleCase(z.distritos[0] ?? 'Zona')} · {categoryLabel[z.category]}</Tooltip>
-          <Popup autoPanPaddingTopLeft={[24, 300]} autoPanPaddingBottomRight={[24, 180]}><ZonePopup z={z} /></Popup>
+          <Popup autoPanPaddingTopLeft={[20, 20]} autoPanPaddingBottomRight={[20, 20]}><ZonePopup z={z} /></Popup>
         </Marker>
       </React.Fragment>);
   };
@@ -165,6 +177,7 @@ export function AccidentMap({ points, zones, selectedCode, onSelect, focus, fitP
     <MapContainer bounds={REGION_BOUNDS} preferCanvas className="h-full w-full" zoomControl={false} scrollWheelZoom>
       <MapController focus={focus} fitPoints={fitPoints} fitKey={fitKey} />
       <ZoneFocus zone={activeZone} markers={markers} />
+      <SizeWatcher />
       <BaseTiles id={basemap} onFail={onBasemapFail} />
       {showMinorZones && <LayerGroup>{otherZones.map(zoneLayer)}</LayerGroup>}
       <LayerGroup>{priorityZones.map(zoneLayer)}</LayerGroup>

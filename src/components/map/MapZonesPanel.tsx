@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { AlertOctagonIcon, ChevronRightIcon, XIcon } from 'lucide-react';
+import { AlertOctagonIcon, ChevronRightIcon, MapIcon, XIcon } from 'lucide-react';
 import type { PriorityCategory, Zone } from '../../types/data';
 import { categoryLabel } from '../../data/ipivConfig';
 import { pointHex } from '../../utils/quarters';
@@ -12,12 +12,15 @@ interface Props {
   onSelect: (id: string) => void;
   onClose?: () => void;
   hasAnalysis: boolean;
+  tab: 'zonas' | 'leyenda';
+  onTab: (t: 'zonas' | 'leyenda') => void;
+  legend: React.ReactNode;
 }
 
 const CATS: PriorityCategory[] = ['muy_alta', 'alta', 'media', 'baja'];
 
 /** Lista lateral de zonas ordenadas por prioridad; al tocar una, el mapa vuela hasta ella. */
-export function MapZonesPanel({ zones, activeZoneId, onSelect, onClose, hasAnalysis }: Props) {
+export function MapZonesPanel({ zones, activeZoneId, onSelect, onClose, hasAnalysis, tab, onTab, legend }: Props) {
   const [cat, setCat] = useState<PriorityCategory | 'prioritarias' | null>('prioritarias');
   const counts = useMemo(() => Object.fromEntries(CATS.map((c) => [c, zones.filter((z) => z.category === c).length])) as Record<PriorityCategory, number>, [zones]);
   const list = useMemo(() => [...zones].sort((a, b) => a.rank - b.rank).filter((z) => cat === null ? true : cat === 'prioritarias' ? z.category === 'muy_alta' || z.category === 'alta' : z.category === cat), [zones, cat]);
@@ -25,15 +28,23 @@ export function MapZonesPanel({ zones, activeZoneId, onSelect, onClose, hasAnaly
 
   return (
     <div className="flex h-full flex-col bg-surface">
-      <div className="border-b border-line p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-[15px] font-bold text-ink"><AlertOctagonIcon className="h-4 w-4 text-[#E11D48]" />Zonas a atender</h2>
-          {onClose && <button type="button" onClick={onClose} className="rounded-lg p-1 text-muted hover:bg-canvas" aria-label="Cerrar panel de zonas"><XIcon className="h-4 w-4" /></button>}
+      <div className="border-b border-line p-3">
+        <div className="flex items-center gap-1">
+          <div className="flex flex-1 rounded-xl bg-canvas p-1" role="tablist">
+            {([['zonas', 'Zonas a atender', AlertOctagonIcon], ['leyenda', 'Leyenda', MapIcon]] as const).map(([id, label, Icon]) =>
+            <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => onTab(id)}
+            className={`inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg text-xs font-bold transition-all ${tab === id ? 'bg-surface text-ink shadow-[0_1px_3px_rgba(15,42,61,0.18)]' : 'text-muted hover:text-ink'}`}>
+                <Icon className={`h-3.5 w-3.5 ${id === 'zonas' ? 'text-[#E11D48]' : 'text-primary'}`} />{label}
+              </button>
+            )}
+          </div>
+          {onClose && <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-muted hover:bg-canvas" aria-label="Cerrar panel"><XIcon className="h-4 w-4" /></button>}
         </div>
-        <KpiStrip variant="compact" />
+        {tab === 'zonas' && <div className="mt-3"><KpiStrip variant="compact" /></div>}
       </div>
 
-      {!hasAnalysis ?
+      {tab === 'leyenda' ? <div className="scrollbar-thin flex-1 overflow-y-auto p-4">{legend}</div> :
+      !hasAnalysis ?
       <p className="m-4 rounded-xl bg-amber-50 p-3 text-xs text-[#7a3d06]">Ejecute el reprocesamiento desde la barra amarilla superior para identificar las zonas de concentración y su prioridad.</p> :
       <>
           <div className="border-b border-line px-4 py-3">

@@ -67,7 +67,7 @@ export function Patterns() {
   const snap = state.analysis;
 
   if (!views.length) {
-    return <main className="mx-auto w-full max-w-3xl px-4 py-12"><EmptyState title="Sin datos para analizar patrones" description="Importe la base de siniestros para generar distribuciones territoriales, temporales y por usuario vial." actionLabel="Ir a Gestión de datos" actionTo="/datos" /></main>;
+    return <main className="page"><div className="mx-auto max-w-3xl py-6"><EmptyState title="Sin datos para analizar patrones" description="Importe la base de siniestros para generar distribuciones territoriales, temporales y por usuario vial." actionLabel="Ir a Gestión de datos" actionTo="/datos" /></div></main>;
   }
 
   const activeTab = TABS.find((t) => t.id === tab) ?? TABS[0];

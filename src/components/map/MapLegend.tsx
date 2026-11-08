@@ -8,16 +8,10 @@ import type { ColorBy, MapMode } from './AccidentMap';
 const Dot = ({ color, ring = '#ffffff' }: { color: string; ring?: string }) =>
   <span className="h-3 w-3 shrink-0 rounded-full shadow-sm" style={{ background: color, border: `1.5px solid ${ring}` }} />;
 
-export function MapLegend({ mode, colorBy, defaultOpen = true, showMinor, onShowMinor }: { mode: MapMode; colorBy: ColorBy; defaultOpen?: boolean; showMinor: boolean; onShowMinor: (v: boolean) => void }) {
+export function MapLegend({ mode, colorBy, defaultOpen = true, showMinor, onShowMinor, bare = false }: { mode: MapMode; colorBy: ColorBy; defaultOpen?: boolean; showMinor: boolean; onShowMinor: (v: boolean) => void; bare?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   const cats: PriorityCategory[] = ['muy_alta', 'alta', 'media', 'baja'];
-  return (
-    <div className="pointer-events-auto w-[230px] rounded-2xl border border-line bg-surface/95 text-[11px] text-ink shadow-[0_10px_30px_-12px_rgba(15,42,61,0.35)] backdrop-blur">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between gap-2 px-3 py-2 font-semibold" aria-expanded={open}>
-        <span className="flex items-center gap-1.5"><MapIcon className="h-3.5 w-3.5 text-primary" />Leyenda</span>
-        <ChevronDownIcon className={`h-3.5 w-3.5 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open &&
+  const body = (
       <div className="grid gap-2.5 border-t border-line px-3 pb-3 pt-2">
           {mode !== 'calor' && mode !== 'zonas' && (colorBy === 'prioridad' ?
         <div>
@@ -58,6 +52,14 @@ export function MapLegend({ mode, colorBy, defaultOpen = true, showMinor, onShow
           </label>
           <p className="text-[10px] leading-snug text-muted">Las concentraciones son agrupaciones espaciales, no tramos viales verificados.</p>
         </div>
-      }
+  );
+  if (bare) return <div className="text-[12px] text-ink [&>div]:border-0 [&>div]:p-0">{body}</div>;
+  return (
+    <div className="pointer-events-auto w-[230px] rounded-2xl border border-line bg-surface/95 text-[11px] text-ink shadow-[0_10px_30px_-12px_rgba(15,42,61,0.35)] backdrop-blur">
+      <button type="button" onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between gap-2 px-3 py-2 font-semibold" aria-expanded={open}>
+        <span className="flex items-center gap-1.5"><MapIcon className="h-3.5 w-3.5 text-primary" />Leyenda</span>
+        <ChevronDownIcon className={`h-3.5 w-3.5 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && body}
     </div>);
 }
