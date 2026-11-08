@@ -21,7 +21,6 @@ export function AppHeader() {
   const [open, setOpen] = useState(false);
   const hasData = state.dataVersion > 0;
 
-  const status = !ready ? 'Cargando base local…' : hasData ? `Datos v${state.dataVersion} · ${formatDateTime(state.lastProcessedAt)}` : 'Sin datos importados';
 
   return (
     <header className="sticky top-0 z-[1100] bg-navy text-white shadow-[0_6px_20px_-12px_rgba(0,0,0,0.6)]">
@@ -32,10 +31,8 @@ export function AppHeader() {
           </span>
           <span className="min-w-0 leading-tight">
             <span className="block truncate text-[15px] font-bold tracking-tight">RUTA-VIVA <span className="font-semibold text-signal">Perú</span></span>
-            <span className="hidden truncate text-[11px] text-white/60 sm:block">Dónde y cuándo ocurren los siniestros fatales, y qué zonas atender primero</span>
           </span>
         </Link>
-        <span className="hidden whitespace-nowrap rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-semibold text-white/85 md:inline">Región Arequipa</span>
         <div className="ml-auto hidden items-center gap-3 lg:flex">
           <span className="flex items-center gap-2 whitespace-nowrap rounded-full bg-white/5 px-3 py-1 text-xs text-white/75">
             <span className={`h-2 w-2 rounded-full ${!hasData ? 'bg-white/40' : stale ? 'bg-signal' : 'bg-emerald-400'}`} aria-hidden />
