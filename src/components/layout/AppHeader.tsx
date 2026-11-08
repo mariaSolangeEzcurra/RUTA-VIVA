@@ -25,13 +25,13 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-[1100] bg-navy text-white shadow-[0_6px_20px_-12px_rgba(0,0,0,0.6)]">
-      <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4 lg:px-6">
+      <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-3 px-4 sm:px-6 lg:px-10">
         <Link to="/" className="group flex min-w-0 items-center gap-2.5">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary ring-2 ring-white/90 ring-offset-2 ring-offset-navy transition-transform duration-150 group-hover:-rotate-3" aria-hidden>
             <RouteIcon className="h-5 w-5" />
           </span>
           <span className="min-w-0 leading-tight">
-            <span className="block truncate text-[15px] font-extrabold tracking-tight">RUTA-VIVA <span className="font-semibold text-signal">Perú</span></span>
+            <span className="block truncate text-[15px] font-bold tracking-tight">RUTA-VIVA <span className="font-semibold text-signal">Perú</span></span>
             <span className="hidden truncate text-[11px] text-white/60 sm:block">Dónde y cuándo ocurren los siniestros fatales, y qué zonas atender primero</span>
           </span>
         </Link>
@@ -51,7 +51,7 @@ export function AppHeader() {
         </button>
       </div>
       <nav aria-label="Secciones" className="hidden bg-navy-2 lg:block">
-        <ul className="mx-auto flex max-w-[1600px] items-center gap-0.5 px-4 lg:px-6">
+        <ul className="mx-auto flex max-w-[1440px] items-center gap-0.5 px-4 sm:px-6 lg:px-10">
           {nav.map((n) => {
             const Icon = n.icon;
             return (

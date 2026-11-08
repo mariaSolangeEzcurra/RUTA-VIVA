@@ -24,9 +24,9 @@ export function DataManagement() {
   const;
 
   return (
-    <main className="mx-auto w-full max-w-[1400px] px-4 py-6 lg:px-6">
+    <main className="page">
       <PageHeader title="Gestión de datos" description="Importe archivos Excel, revise la validación antes de incorporar cambios y actualice los análisis. Los datos importados se conservan en este navegador; no es necesario volver a cargarlos." />
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_360px]">
+      <div className="mt-8 grid gap-6 lg:gap-8 xl:grid-cols-[1fr_360px]">
         <div className="grid min-w-0 gap-6">
           <Panel title="Importar archivos Excel"><ImportWizard /></Panel>
           <Panel title="Historial de importaciones" subtitle={`${state.imports.length} operaciones registradas`}><ImportHistory /></Panel>

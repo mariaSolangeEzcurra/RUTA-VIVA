@@ -8,7 +8,7 @@ export function AnalysisStatusBanner() {
   if (!stale) return null;
   return (
     <div role="status" className="border-b border-warn/25 bg-amber-50">
-      <div className="mx-auto flex max-w-[1600px] flex-col gap-2 px-4 py-2 text-sm text-[#7a3d06] sm:flex-row sm:items-center lg:px-6">
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-4 py-2 text-sm text-[#7a3d06] sm:flex-row sm:items-center lg:px-6">
         <AlertTriangleIcon className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden />
         <p className="flex-1">
           <span className="font-semibold">Análisis pendiente de actualización.</span> {staleReason} Los indicadores básicos ya reflejan los datos actuales; las concentraciones y el ranking IPIV no.

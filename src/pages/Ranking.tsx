@@ -73,13 +73,13 @@ export function Ranking() {
   })), `ranking_ipiv_v${snap?.dataVersion ?? 0}.csv`);
 
   return (
-    <main className="mx-auto w-full max-w-[1600px] px-4 py-6 lg:px-6">
+    <main className="page">
       <PageHeader
         title="Ranking de prioridad IPIV"
         description="Ranking de carga histórica: ordena las concentraciones por consecuencias, recurrencia, concentración y patrones de los siniestros registrados. No expresa probabilidad de accidente."
         actions={snap && <button type="button" onClick={exportCsv} className="inline-flex h-9 items-center gap-2 rounded-md border border-line bg-surface px-3 text-sm font-medium hover:bg-canvas"><DownloadIcon className="h-4 w-4" />Exportar CSV</button>} />
       
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_320px]">
+      <div className="mt-8 grid gap-6 lg:gap-8 xl:grid-cols-[1fr_320px]">
         <div className="grid gap-6">
           {!snap ?
           <EmptyState title="Ranking no calculado" description="Importe siniestros con coordenadas y ejecute el reprocesamiento para generar el ranking." actionLabel="Ir a Gestión de datos" actionTo="/datos" /> :
@@ -111,7 +111,7 @@ export function Ranking() {
                     const tc = topContributors(z, 2);
                     return (
                       <tr key={z.id} className="border-t border-line align-top transition-colors duration-150 ease-out hover:bg-canvas/60">
-                            <td className="px-3 py-3"><span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-extrabold text-white shadow" style={{ background: pointHex[z.category] }}>{z.rank}</span></td>
+                            <td className="px-3 py-3"><span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-white shadow" style={{ background: pointHex[z.category] }}>{z.rank}</span></td>
                             <td className="px-3 py-3">
                               <Link to={`/zona/${encodeURIComponent(z.id)}`} className="font-medium text-primary hover:underline">{z.distritos.map(titleCase).join(', ') || 'Distrito sin dato'}</Link>
                               <p className="font-mono text-[11px] text-muted">{z.id}</p>

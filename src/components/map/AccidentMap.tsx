@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import type { Marker as LeafletMarker } from 'leaflet';
-import { Circle, CircleMarker, LayerGroup, LayersControl, MapContainer, Marker, Popup, ScaleControl, TileLayer, Tooltip, ZoomControl, useMap } from 'react-leaflet';
+import { Circle, CircleMarker, LayerGroup, MapContainer, Marker, Popup, ScaleControl, TileLayer, Tooltip, ZoomControl, useMap } from 'react-leaflet';
+import { BASEMAPS } from './basemaps';
 import type { SiniestroView, Zone } from '../../types/data';
 import { categoryLabel } from '../../data/ipivConfig';
 import { AREQUIPA_BBOX } from '../../utils/parsing';
@@ -25,6 +26,9 @@ interface AccidentMapProps {
   colorBy: ColorBy;
   activeZoneId: string | null;
   onZoneSelect: (id: string | null) => void;
+  basemap: string;
+  onBasemapFail: (id: string) => void;
+  showMinorZones: boolean;
 }
 
 const REGION_BOUNDS: [[number, number], [number, number]] = [[AREQUIPA_BBOX.minLat, AREQUIPA_BBOX.minLon], [AREQUIPA_BBOX.maxLat, AREQUIPA_BBOX.maxLon]];
@@ -61,7 +65,7 @@ function ZoneFocus({ zone, markers }: { zone: Zone | null; markers: React.Mutabl
   return null;
 }
 
-function zoneIcon(z: Zone, active: boolean) {
+export function zoneIcon(z: Zone, active: boolean) {
   const size = ZONE_SIZE[z.category];
   const pulse = z.category === 'muy_alta' ? ' rv-zone--pulse' : '';
   return L.divIcon({
@@ -78,7 +82,7 @@ function ZonePopup({ z }: { z: Zone }) {
   return (
     <div className="min-w-[220px] font-sans text-xs">
       <div className="flex items-center gap-2">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-extrabold text-white" style={{ background: color }}>{z.rank}</span>
+        <span className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: color }}>{z.rank}</span>
         <div>
           <p className="text-sm font-bold leading-tight text-ink">{titleCase(z.distritos.join(', ') || 'Distrito sin dato')}</p>
           <p className="text-[11px] font-semibold" style={{ color }}>Prioridad {categoryLabel[z.category].toLowerCase()} · puesto {z.rank}</p>
@@ -98,7 +102,24 @@ function ZonePopup({ z }: { z: Zone }) {
     </div>);
 }
 
-export function AccidentMap({ points, zones, selectedCode, onSelect, focus, fitPoints, fitKey, mode, colorBy, activeZoneId, onZoneSelect }: AccidentMapProps) {
+/** Capa base con detección de fallos: si casi ningún mosaico carga, avisa para cambiar de proveedor. */
+export function BaseTiles({ id, onFail }: { id: string; onFail: (id: string) => void }) {
+  const bm = BASEMAPS.find((b) => b.id === id) ?? BASEMAPS[0];
+  const stats = useRef({ ok: 0, err: 0, reported: false });
+  useEffect(() => {stats.current = { ok: 0, err: 0, reported: false };}, [id]);
+  return (
+    <TileLayer key={bm.id} url={bm.url} attribution={bm.attribution} maxZoom={20} maxNativeZoom={bm.maxZoom} {...(bm.subdomains ? { subdomains: bm.subdomains } : {})}
+      eventHandlers={{
+        tileload: () => {stats.current.ok++;},
+        tileerror: () => {
+          const st = stats.current;
+          st.err++;
+          if (!st.reported && st.err >= 6 && st.ok === 0) {st.reported = true;onFail(bm.id);}
+        }
+      }} />);
+}
+
+export function AccidentMap({ points, zones, selectedCode, onSelect, focus, fitPoints, fitKey, mode, colorBy, activeZoneId, onZoneSelect, basemap, onBasemapFail, showMinorZones }: AccidentMapProps) {
   const markers = useRef(new Map<string, LeafletMarker>());
   const byPriority = useMemo(() => [...zones].sort((a, b) => ZONE_WEIGHT[a.category] - ZONE_WEIGHT[b.category] || b.rank - a.rank), [zones]);
   const priorityZones = byPriority.filter((z) => z.category === 'muy_alta' || z.category === 'alta');
@@ -111,7 +132,7 @@ export function AccidentMap({ points, zones, selectedCode, onSelect, focus, fitP
     const active = z.id === activeZoneId;
     return (
       <React.Fragment key={z.id}>
-        <Circle center={z.centroid} radius={Math.max(z.radiusM, 120)} interactive={false}
+        <Circle center={z.centroid} radius={Math.max(z.radiusM, 150)} interactive={false}
           pathOptions={{ color: pointHex[z.category], weight: active ? 4 : strong ? 2.5 : 1.5, dashArray: strong ? undefined : '5 5', fillColor: pointHex[z.category], fillOpacity: zonesFirst ? strong ? 0.28 : 0.15 : strong ? 0.16 : 0.08 }} />
         <Marker position={z.centroid} icon={zoneIcon(z, active)} zIndexOffset={ZONE_WEIGHT[z.category] * 1000 - z.rank}
           ref={(m) => {if (m) markers.current.set(z.id, m);else markers.current.delete(z.id);}}
@@ -137,33 +158,16 @@ export function AccidentMap({ points, zones, selectedCode, onSelect, focus, fitP
     if (zonesFirst && !selected) {
       return { color: '#ffffff', weight: 0.8, fillColor: colorBy === 'prioridad' && !p.zoneCategory ? '#64748B' : fill, fillOpacity: 0.55 };
     }
-    return { color: selected ? '#1C2731' : stroke, weight: selected ? 3 : 1.5, fillColor: fill, fillOpacity: mode === 'ambos' ? 0.8 : 0.95 };
+    return { color: selected ? '#0F2A3D' : stroke, weight: selected ? 3 : 1.5, fillColor: fill, fillOpacity: mode === 'ambos' ? 0.8 : 0.95 };
   };
 
   return (
     <MapContainer bounds={REGION_BOUNDS} preferCanvas className="h-full w-full" zoomControl={false} scrollWheelZoom>
       <MapController focus={focus} fitPoints={fitPoints} fitKey={fitKey} />
       <ZoneFocus zone={activeZone} markers={markers} />
-      <LayersControl position="topright">
-        <LayersControl.BaseLayer checked name="Claro (recomendado)">
-          <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' maxZoom={20} />
-        </LayersControl.BaseLayer>
-        <LayersControl.BaseLayer name="Gris suave">
-          <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' maxZoom={20} />
-        </LayersControl.BaseLayer>
-        <LayersControl.BaseLayer name="OpenStreetMap">
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">colaboradores de OpenStreetMap</a>' maxZoom={19} />
-        </LayersControl.BaseLayer>
-        <LayersControl.BaseLayer name="Oscuro (resalta el calor)">
-          <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' maxZoom={20} />
-        </LayersControl.BaseLayer>
-        <LayersControl.Overlay checked name="Zonas prioritarias (alta y muy alta)">
-          <LayerGroup>{priorityZones.map(zoneLayer)}</LayerGroup>
-        </LayersControl.Overlay>
-        <LayersControl.Overlay checked name="Otras concentraciones (media y baja)">
-          <LayerGroup>{otherZones.map(zoneLayer)}</LayerGroup>
-        </LayersControl.Overlay>
-      </LayersControl>
+      <BaseTiles id={basemap} onFail={onBasemapFail} />
+      {showMinorZones && <LayerGroup>{otherZones.map(zoneLayer)}</LayerGroup>}
+      <LayerGroup>{priorityZones.map(zoneLayer)}</LayerGroup>
       <ZoomControl position="topright" />
       <ScaleControl position="topright" imperial={false} maxWidth={90} />
       {(mode === 'calor' || mode === 'ambos') && <HeatmapLayer points={points} />}

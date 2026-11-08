@@ -15,7 +15,7 @@ export function Tracking() {
   const counts = stateOrder.map((s) => ({ s, n: state.interventions.filter((i) => i.state === s).length }));
 
   return (
-    <main className="mx-auto w-full max-w-[1400px] px-4 py-6 lg:px-6">
+    <main className="page">
       <PageHeader title="Seguimiento de intervenciones" description="Ciclo de vida de cada intervención candidata. Los cambios de estado los registra un usuario con sustento; el algoritmo nunca aprueba ni ejecuta medidas." />
       {state.interventions.length === 0 ?
       <div className="mt-6"><EmptyState title="Sin intervenciones registradas" description="Abra una zona del ranking IPIV y use “Registrar en seguimiento” en una intervención candidata." actionLabel="Ir al ranking IPIV" actionTo="/ranking" /></div> :

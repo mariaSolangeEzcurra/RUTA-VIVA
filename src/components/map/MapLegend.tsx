@@ -8,11 +8,11 @@ import type { ColorBy, MapMode } from './AccidentMap';
 const Dot = ({ color, ring = '#ffffff' }: { color: string; ring?: string }) =>
   <span className="h-3 w-3 shrink-0 rounded-full shadow-sm" style={{ background: color, border: `1.5px solid ${ring}` }} />;
 
-export function MapLegend({ mode, colorBy, defaultOpen = true }: { mode: MapMode; colorBy: ColorBy; defaultOpen?: boolean }) {
+export function MapLegend({ mode, colorBy, defaultOpen = true, showMinor, onShowMinor }: { mode: MapMode; colorBy: ColorBy; defaultOpen?: boolean; showMinor: boolean; onShowMinor: (v: boolean) => void }) {
   const [open, setOpen] = useState(defaultOpen);
   const cats: PriorityCategory[] = ['muy_alta', 'alta', 'media', 'baja'];
   return (
-    <div className="pointer-events-auto w-[210px] rounded-2xl border border-line bg-surface/95 text-[11px] text-ink shadow-[0_10px_30px_-12px_rgba(28,39,49,0.35)] backdrop-blur">
+    <div className="pointer-events-auto w-[230px] rounded-2xl border border-line bg-surface/95 text-[11px] text-ink shadow-[0_10px_30px_-12px_rgba(15,42,61,0.35)] backdrop-blur">
       <button type="button" onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between gap-2 px-3 py-2 font-semibold" aria-expanded={open}>
         <span className="flex items-center gap-1.5"><MapIcon className="h-3.5 w-3.5 text-primary" />Leyenda</span>
         <ChevronDownIcon className={`h-3.5 w-3.5 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -46,12 +46,16 @@ export function MapLegend({ mode, colorBy, defaultOpen = true }: { mode: MapMode
             <ul className="grid grid-cols-2 gap-x-2 gap-y-1.5">
               {cats.map((c, i) =>
               <li key={c} className="flex items-center gap-1.5">
-                  <span className="flex items-center justify-center rounded-full border-2 border-white text-[10px] font-extrabold text-white shadow" style={{ background: pointHex[c], width: 22 - i * 2, height: 22 - i * 2 }}>{i + 1}</span>
+                  <span className="flex items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow" style={{ background: pointHex[c], width: 22 - i * 2, height: 22 - i * 2 }}>{i + 1}</span>
                   {categoryLabel[c]}
                 </li>
               )}
             </ul>
           </div>
+          <label className="flex cursor-pointer items-center justify-between gap-2 rounded-lg bg-canvas px-2 py-1.5 font-semibold">
+            Mostrar zonas media y baja
+            <input type="checkbox" checked={showMinor} onChange={(e) => onShowMinor(e.target.checked)} className="h-4 w-4 accent-[#0F766E]" />
+          </label>
           <p className="text-[10px] leading-snug text-muted">Las concentraciones son agrupaciones espaciales, no tramos viales verificados.</p>
         </div>
       }

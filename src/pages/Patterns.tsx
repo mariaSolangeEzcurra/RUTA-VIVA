@@ -73,7 +73,7 @@ export function Patterns() {
   const activeTab = TABS.find((t) => t.id === tab) ?? TABS[0];
 
   return (
-    <main className="mx-auto w-full max-w-[1600px] px-4 py-6 lg:px-6">
+    <main className="page">
       <PageHeader title="Análisis de patrones" description="Explore los datos por pestañas: empiece por Trimestres y tendencias. Los filtros de la izquierda afectan a todas las vistas y también al mapa." />
 
       <nav aria-label="Vistas de análisis" className="sticky top-[59px] z-[800] -mx-4 mt-5 border-b border-line bg-canvas/95 px-4 py-2 backdrop-blur lg:top-[99px] lg:mx-0 lg:rounded-xl lg:border lg:bg-surface/95 lg:px-2">
@@ -94,7 +94,7 @@ export function Patterns() {
         </ul>
       </nav>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[270px_1fr]">
+      <div className="mt-8 grid gap-6 lg:gap-8 lg:grid-cols-[270px_1fr]">
         <aside className="lg:sticky lg:top-44 lg:max-h-[calc(100vh-12rem)] lg:self-start lg:overflow-y-auto" aria-label="Filtros">
           <details className="group rounded-xl border border-line bg-surface lg:hidden">
             <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-semibold">Filtros <span className="text-xs font-normal text-muted">{filtered.length} de {views.length} siniestros</span></summary>

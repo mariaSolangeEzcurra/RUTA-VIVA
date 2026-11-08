@@ -53,7 +53,7 @@ export function MapTimeline({ series, yearFrom, yearTo, trimestre, onSelect, onR
   const current = selectedIdx >= 0 ? series[selectedIdx] : null;
 
   return (
-    <div className="pointer-events-auto rounded-2xl border border-line bg-surface/95 p-2.5 shadow-[0_10px_30px_-12px_rgba(28,39,49,0.35)] backdrop-blur sm:p-3">
+    <div className="pointer-events-auto rounded-2xl border border-line bg-surface/95 p-2.5 shadow-[0_10px_30px_-12px_rgba(15,42,61,0.35)] backdrop-blur sm:p-3">
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <button type="button" onClick={() => setPlaying((p) => !p)}
           className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-white shadow-sm transition-colors ${playing ? 'bg-fatal hover:bg-fatal/90' : 'bg-primary hover:bg-primary/90'}`}
@@ -91,7 +91,7 @@ export function MapTimeline({ series, yearFrom, yearTo, trimestre, onSelect, onR
                   height: `${Math.max(6, (s.count / max) * 38)}px`,
                   background: s.status === 'parcial' ? `repeating-linear-gradient(45deg, ${quarterInfo[s.q].color}, ${quarterInfo[s.q].color} 3px, ${quarterInfo[s.q].soft} 3px, ${quarterInfo[s.q].soft} 6px)` : quarterInfo[s.q].color,
                   opacity: anyPeriod && !inRange(s) ? 0.25 : 1,
-                  outline: i === selectedIdx ? '2px solid #1C2731' : undefined,
+                  outline: i === selectedIdx ? '2px solid #0F2A3D' : undefined,
                   outlineOffset: 2
                 }} />
                   </button>

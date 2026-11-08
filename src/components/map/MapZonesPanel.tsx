@@ -64,7 +64,7 @@ export function MapZonesPanel({ zones, activeZoneId, onSelect, onClose, hasAnaly
               <li key={z.id}>
                   <button type="button" onClick={() => onSelect(z.id)}
                 className={`group grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-xl p-2.5 text-left transition-colors ${active ? 'bg-canvas ring-2 ring-navy/80' : 'hover:bg-canvas'}`}>
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white text-sm font-extrabold text-white shadow-md" style={{ background: color }}>{z.rank}</span>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white text-sm font-bold text-white shadow-md" style={{ background: color }}>{z.rank}</span>
                     <span className="min-w-0">
                       <span className="block truncate text-[13px] font-bold text-ink">{titleCase(z.distritos.join(', ') || 'Distrito sin dato')}</span>
                       <span className="block truncate text-[11px] text-muted">{z.siniestros} siniestros · {z.fallecidos ?? '—'} fallecidos · {z.years.length} años</span>

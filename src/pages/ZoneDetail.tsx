@@ -56,7 +56,7 @@ export function ZoneDetail() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-[1400px] px-4 py-6 lg:px-6">
+    <main className="page">
       <Link to="/ranking" className="inline-flex items-center gap-1 text-xs font-medium text-primary"><ArrowLeftIcon className="h-3 w-3" />Ranking IPIV</Link>
       <div className="mt-3 flex flex-col gap-4 border-b border-line pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
@@ -75,7 +75,7 @@ export function ZoneDetail() {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_360px]">
+      <div className="mt-8 grid gap-6 lg:gap-8 xl:grid-cols-[1fr_360px]">
         <div className="grid gap-6">
           <ZoneExplanationPanel zone={zone} explanation={data.explanation} snapshot={snap} />
           <Panel title="Intervenciones candidatas" subtitle="Reglas explícitas del catálogo técnico">

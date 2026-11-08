@@ -20,12 +20,12 @@ export function TechnicalSheets() {
   const zones = (state.analysis?.zones ?? []).filter((z) => cat === 'todas' || z.category === cat);
 
   return (
-    <main className="mx-auto w-full max-w-[1400px] px-4 py-6 lg:px-6">
+    <main className="page">
       <PageHeader title="Fichas técnicas" description="Documento PDF por zona, generado a partir del último análisis y de la versión de datos vigente. Se descarga directamente, sin volver a cargar archivos." />
       {!state.analysis ?
       <div className="mt-6"><EmptyState title="No hay zonas analizadas" description="Las fichas se generan a partir del análisis de concentraciones e IPIV." actionLabel="Ir a Gestión de datos" actionTo="/datos" /></div> :
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
+      <div className="mt-8 grid gap-6 lg:gap-8 lg:grid-cols-[1fr_300px]">
           <div>
             {stale && <p className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-xs text-[#7a3d06]">El análisis no corresponde a la versión de datos actual. Las fichas indicarán ambas versiones; se recomienda reprocesar antes de emitirlas.</p>}
             <div className="mb-3 flex items-center gap-2">

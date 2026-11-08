@@ -25,7 +25,7 @@ export function QuarterGroupedChart({ series, height = 280 }: { series: QuarterP
           <CartesianGrid stroke="#e5e9ee" vertical={false} />
           <XAxis dataKey="q" tick={{ fontSize: 11, fill: '#576373' }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 11, fill: '#576373' }} axisLine={false} tickLine={false} allowDecimals={false} />
-          <Tooltip cursor={{ fill: '#1C2731', fillOpacity: 0.04 }} contentStyle={{ fontSize: 12, borderRadius: 8, borderColor: '#dee3e9' }} formatter={(v: unknown, n: unknown) => [v === null || v === undefined ? 'Incompleto' : `${v} siniestros`, String(n)]} />
+          <Tooltip cursor={{ fill: '#0F2A3D', fillOpacity: 0.04 }} contentStyle={{ fontSize: 12, borderRadius: 8, borderColor: '#dee3e9' }} formatter={(v: unknown, n: unknown) => [v === null || v === undefined ? 'Incompleto' : `${v} siniestros`, String(n)]} />
           <Legend wrapperStyle={{ fontSize: 11 }} />
           {years.map((y, i) => <Bar key={y} dataKey={String(y)} name={String(y)} fill={colors[i]} radius={[3, 3, 0, 0]} maxBarSize={22} />)}
         </BarChart>

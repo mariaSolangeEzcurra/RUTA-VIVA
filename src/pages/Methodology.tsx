@@ -21,7 +21,7 @@ const sections = [
 export function Methodology() {
   const { state } = useData();
   return (
-    <main className="mx-auto w-full max-w-[1400px] px-4 py-6 lg:px-6">
+    <main className="page">
       <PageHeader title="Fuentes y metodología" description="Fuentes, reglas de integridad, fórmulas, parámetros, validación y limitaciones del prototipo. Todo lo que aparece aquí corresponde a lo implementado." />
       <div className="mt-6 grid gap-8 lg:grid-cols-[200px_1fr]">
         <nav aria-label="Contenido" className="hidden lg:block">

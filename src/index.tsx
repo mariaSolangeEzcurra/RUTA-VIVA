@@ -1,3 +1,4 @@
+import "@fontsource-variable/figtree";
 import "leaflet/dist/leaflet.css";
 import "./index.css";
 import React from "react";

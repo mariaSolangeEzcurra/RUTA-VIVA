@@ -8,8 +8,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Overpass"', 'system-ui', 'sans-serif'],
-        mono: ['"Overpass Mono"', 'ui-monospace', 'monospace'],
+        sans: ['"Figtree Variable"', 'system-ui', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       colors: {
         navy: { DEFAULT: v('navy'), 2: v('navy-2') },

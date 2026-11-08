@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertOctagonIcon, ArrowRightIcon, BarChart3Icon, ListOrderedIcon, MapIcon, UploadIcon } from 'lucide-react';
 import { pointHex } from '../utils/quarters';
+import { ZonesMiniMap } from '../components/map/ZonesMiniMap';
 import { categoryLabel } from '../data/ipivConfig';
 import { useData } from '../contexts/DataContext';
 import { KpiStrip } from '../components/KpiStrip';
@@ -23,11 +24,11 @@ export function Dashboard() {
 
   if (ready && !hasData) {
     return (
-      <main className="mx-auto w-full max-w-[1200px] px-4 py-8 lg:px-6">
+      <main className="page max-w-[1200px]">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr]">
           <div>
             <p className="text-xs font-medium text-primary">Piloto Región Arequipa · 2021–2025</p>
-            <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">Del registro de siniestros a la priorización explicable de intervenciones viales</h1>
+            <h1 className="mt-2 text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">Del registro de siniestros a la priorización explicable de intervenciones viales</h1>
             <p className="mt-4 text-sm leading-relaxed text-muted">
               RUTA-VIVA PERÚ convierte los registros oficiales de siniestralidad en concentraciones geográficas, un ranking IPIV con su explicación,
               un índice separado de calidad del dato y fichas técnicas para inspección. Todas las cifras se calculan a partir de los archivos que usted importe;
@@ -72,14 +73,14 @@ export function Dashboard() {
   const shortcuts = [
   { to: '/mapa', icon: MapIcon, title: 'Ver el mapa', text: 'Ubique las zonas prioritarias y recorra los trimestres.', color: '#E11D48' },
   { to: '/patrones', icon: BarChart3Icon, title: 'Analizar patrones', text: 'Tendencias por trimestre, por qué subió o bajó y proyección.', color: '#0891B2' },
-  { to: '/ranking', icon: ListOrderedIcon, title: 'Ranking de zonas', text: 'Todas las zonas ordenadas por su índice de prioridad.', color: '#0B6E4F' }];
+  { to: '/ranking', icon: ListOrderedIcon, title: 'Ranking de zonas', text: 'Todas las zonas ordenadas por su índice de prioridad.', color: '#0F766E' }];
 
   return (
-    <main className="mx-auto w-full max-w-[1600px] px-4 py-6 lg:px-6">
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="border-l-4 border-signal pl-4">
-          <h1 className="text-2xl font-extrabold tracking-tight sm:text-[30px] sm:leading-tight">Siniestralidad vial fatal en Arequipa</h1>
-          <p className="mt-1 text-sm text-muted">
+    <main className="page">
+      <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="flex items-center gap-3 text-2xl font-bold tracking-tight sm:text-[32px] sm:leading-tight"><span className="h-8 w-1.5 shrink-0 rounded-full bg-signal" aria-hidden />Siniestralidad vial fatal en Arequipa</h1>
+          <p className="mt-2 pl-[18px] text-[15px] text-muted">
             Registros georreferenciados {years.length ? `${years[0]}–${years[years.length - 1]}` : ''}, datos preliminares
             {activeFilterCount(filters) > 0 && `. Hay ${activeFilterCount(filters)} filtro(s) activos.`}
           </p>
@@ -88,7 +89,7 @@ export function Dashboard() {
       </div>
       <KpiStrip />
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_1fr]">
+      <div className="mt-8 grid gap-6 lg:gap-8 xl:grid-cols-2">
         <Panel title="Zonas a atender primero" icon={<AlertOctagonIcon className="h-4 w-4" />}
         subtitle={state.analysis ? 'Ordenadas por el índice de prioridad IPIV (0–100)' : 'Análisis no ejecutado'}
         actions={<Link to="/ranking" className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-2 py-1 text-xs font-bold text-primary hover:bg-primary-soft">Ver ranking <ArrowRightIcon className="h-3 w-3" /></Link>}>
@@ -103,13 +104,13 @@ export function Dashboard() {
                 {top.map((z) =>
               <li key={z.id}>
                     <Link to={`/zona/${encodeURIComponent(z.id)}`} className="group grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-xl p-2.5 transition-colors duration-150 ease-out hover:bg-canvas">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white text-sm font-extrabold text-white shadow-md" style={{ background: pointHex[z.category] }}>{z.rank}</span>
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white text-sm font-bold text-white shadow-md" style={{ background: pointHex[z.category] }}>{z.rank}</span>
                       <span className="min-w-0">
                         <span className="flex items-center gap-2"><span className="truncate text-sm font-bold">{z.distritos.map(titleCase).join(', ') || 'Distrito sin dato'}</span><PriorityBadge category={z.category} size="sm" /></span>
                         <span className="block truncate text-xs text-muted">{z.siniestros} siniestros · {z.fallecidos ?? 'sin dato de'} fallecidos · {z.years.length} año(s){z.dominantClass ? ` · ${titleCase(z.dominantClass.label)}` : ''}</span>
                         <span className="mt-1 block h-1.5 rounded-full bg-canvas group-hover:bg-white"><span className="block h-1.5 rounded-full" style={{ width: `${z.ipiv}%`, background: pointHex[z.category] }} /></span>
                       </span>
-                      <span className="text-right"><span className="block text-lg font-extrabold tabular-nums leading-none">{z.ipiv}</span><span className="text-[10px] text-muted">IPIV</span></span>
+                      <span className="text-right"><span className="block text-lg font-bold tabular-nums leading-none">{z.ipiv}</span><span className="text-[10px] text-muted">IPIV</span></span>
                     </Link>
                   </li>
               )}
@@ -118,32 +119,43 @@ export function Dashboard() {
           <p className="py-6 text-center text-sm text-muted">{state.analysis ? 'No se formaron concentraciones con los parámetros actuales.' : 'Ejecute el reprocesamiento para calcular concentraciones e IPIV.'}</p>
           }
         </Panel>
-        <div className="grid content-start gap-6">
-          <Panel title="Evolución anual" icon={<BarChart3Icon className="h-4 w-4" />} subtitle="Siniestros fatales (barras), fallecidos y lesionados (líneas)">
-            <AnnualChart views={filtered} height={280} />
-          </Panel>
-          <div className="grid gap-3 sm:grid-cols-3">
+        <Panel title="Mapa de zonas" icon={<MapIcon className="h-4 w-4" />} subtitle="Cada número es el puesto de la zona; el color indica su prioridad. Toque una para ver su detalle."
+        actions={<Link to="/mapa" className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-2 py-1 text-xs font-bold text-primary hover:bg-primary-soft">Mapa completo <ArrowRightIcon className="h-3 w-3" /></Link>}>
+          {zonesAll.length ? <ZonesMiniMap zones={zonesAll} height={430} /> : <p className="py-10 text-center text-sm text-muted">Ejecute el reprocesamiento para ubicar las zonas.</p>}
+        </Panel>
+      </div>
+
+      <div className="mt-8 grid gap-6 lg:gap-8 xl:grid-cols-2">
+        <Panel title="Evolución anual" icon={<BarChart3Icon className="h-4 w-4" />} subtitle="Siniestros fatales (barras), fallecidos y lesionados (líneas)">
+          <AnnualChart views={filtered} height={300} />
+        </Panel>
+
+        <Panel title="Calidad y cobertura de los datos" subtitle="Conjunto filtrado">
+          <QualitySummary report={quality} />
+        </Panel>
+      </div>
+
+      <div className="mt-8">
+        <div className="grid gap-4 sm:grid-cols-3">
             {shortcuts.map((c) => {
               const Icon = c.icon;
               return (
-                <Link key={c.to} to={c.to} className="group rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-transparent hover:ring-2" style={{ ['--tw-ring-color' as string]: c.color }}>
+                <Link key={c.to} to={c.to} className="group rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-transparent hover:ring-2" style={{ ['--tw-ring-color' as string]: c.color }}>
                   <span className="flex h-9 w-9 items-center justify-center rounded-xl text-white" style={{ background: c.color }}><Icon className="h-4 w-4" /></span>
                   <p className="mt-2 text-sm font-bold text-ink">{c.title}</p>
                   <p className="mt-0.5 text-xs leading-relaxed text-muted">{c.text}</p>
                 </Link>);
             })}
           </div>
-        </div>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <Panel title="Calidad y cobertura de los datos" subtitle="Conjunto filtrado">
-          <QualitySummary report={quality} />
-        </Panel>
+      {state.historico.length > 0 &&
+      <div className="mt-8">
         <Panel title="Serie histórica agregada" subtitle="Archivo histórico (separado de los registros detallados)">
           {state.historico.length ? <HistoricalChart rows={state.historico} /> : <p className="py-6 text-center text-sm text-muted">El archivo histórico 2008–2025 no ha sido importado.</p>}
         </Panel>
       </div>
+      }
     </main>);
 
 }

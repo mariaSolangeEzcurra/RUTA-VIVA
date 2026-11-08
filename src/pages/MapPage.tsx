@@ -13,6 +13,8 @@ import { MapZonesPanel } from '../components/map/MapZonesPanel';
 import { SiniestroDetail } from '../components/map/SiniestroDetail';
 import { FilterPanel } from '../components/filters/FilterPanel';
 import { EmptyState } from '../components/ui/EmptyState';
+import { toast } from 'sonner';
+import { BASEMAPS, DEFAULT_BASEMAP, FALLBACK_ORDER } from '../components/map/basemaps';
 import { applyFilters, activeFilterCount, withoutPeriod } from '../utils/filters';
 import { datasetCoverage } from '../utils/temporal';
 import { quarterSeries } from '../utils/quarters';
@@ -31,6 +33,25 @@ export function MapPage() {
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [mode, setMode] = useState<MapMode>('zonas');
   const [colorBy, setColorBy] = useState<ColorBy>('prioridad');
+  const [basemap, setBasemap] = useState<string>(() => {
+    try {return localStorage.getItem('rv-basemap') ?? DEFAULT_BASEMAP;} catch {return DEFAULT_BASEMAP;}
+  });
+  const [showMinor, setShowMinor] = useState(true);
+  const changeBasemap = (id: string, persist = true) => {
+    setBasemap(id);
+    if (persist) try {localStorage.setItem('rv-basemap', id);} catch {/* sin almacenamiento */}
+  };
+  const tried = React.useRef(new Set<string>());
+  const onBasemapFail = (failed: string) => {
+    tried.current.add(failed);
+    const next = FALLBACK_ORDER.find((id) => !tried.current.has(id));
+    if (!next) {
+      toast.error('No se pudo cargar ningún mapa base. Revise su conexión a internet; las zonas y puntos siguen visibles.');
+      return;
+    }
+    changeBasemap(next, false);
+    toast.info(`El mapa base «${BASEMAPS.find((b) => b.id === failed)?.label}» no respondió; se cambió a «${BASEMAPS.find((b) => b.id === next)?.label}».`);
+  };
   const [focus, setFocus] = useState<{lat: number;lon: number;zoom: number;key: number;} | null>(null);
   const coverage = useMemo(() => datasetCoverage(views), [views]);
   const periodBase = useMemo(() => applyFilters(views, withoutPeriod(filters)), [views, filters]);
@@ -85,26 +106,32 @@ export function MapPage() {
 
       <div className="relative min-w-0 flex-1">
         <AccidentMap points={points} zones={zones} selectedCode={selected} onSelect={setSelected} focus={focus} fitPoints={fitPoints} fitKey={fitKey}
-        mode={mode} colorBy={colorBy} activeZoneId={activeZoneId} onZoneSelect={selectZone} />
-        <div className="pointer-events-none absolute inset-x-3 top-3 z-[900] flex flex-col items-start gap-2 pr-12">
-          <div className="flex flex-wrap items-center gap-2">
-            {!filtersOpen &&
-            <button type="button" onClick={() => setFiltersOpen(true)} className="pointer-events-auto inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-3.5 text-xs font-bold text-ink shadow-lg" aria-label="Mostrar filtros">
-                <PanelLeftOpenIcon className="h-4 w-4 text-primary" /> Filtros
-                {nFilters > 0 && <span className="rounded-full bg-primary px-1.5 py-px text-[10px] text-white">{nFilters}</span>}
-              </button>
-            }
-            {!zonesOpen &&
-            <button type="button" onClick={() => setZonesOpen(true)} className="pointer-events-auto inline-flex h-10 items-center gap-2 rounded-xl bg-[#E11D48] px-3.5 text-xs font-bold text-white shadow-lg" aria-label="Mostrar zonas prioritarias">
-                <AlertOctagonIcon className="h-4 w-4" /> {priorityCount} zonas prioritarias
-              </button>
-            }
-          </div>
+        mode={mode} colorBy={colorBy} activeZoneId={activeZoneId} onZoneSelect={selectZone}
+        basemap={basemap} onBasemapFail={onBasemapFail} showMinorZones={showMinor} />
+        <div className="pointer-events-none absolute inset-x-3 top-3 z-[900] pr-14 sm:inset-x-4 sm:top-4">
           <MapToolbar mode={mode} onMode={setMode} colorBy={colorBy} onColorBy={setColorBy}
-          trimestre={filters.trimestre as Quarter | null} onTrimestre={(q) => setFilters({ ...filters, trimestre: q })} />
-          <MapLegend mode={mode} colorBy={colorBy} defaultOpen={!isMobile} />
+          trimestre={filters.trimestre as Quarter | null} onTrimestre={(q) => setFilters({ ...filters, trimestre: q })}
+          basemap={basemap} onBasemap={(id) => {tried.current.clear();changeBasemap(id);}}
+          leading={(!filtersOpen || !zonesOpen) &&
+          <div className="flex items-center gap-2 self-end">
+                {!filtersOpen &&
+            <button type="button" onClick={() => setFiltersOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-3.5 text-xs font-bold text-ink hover:bg-canvas" aria-label="Mostrar filtros">
+                    <PanelLeftOpenIcon className="h-4 w-4 text-primary" /> Filtros
+                    {nFilters > 0 && <span className="rounded-full bg-primary px-1.5 py-px text-[10px] text-white">{nFilters}</span>}
+                  </button>
+            }
+                {!zonesOpen &&
+            <button type="button" onClick={() => setZonesOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#E11D48] px-3.5 text-xs font-bold text-white shadow-sm hover:bg-[#BE123C]" aria-label="Mostrar zonas prioritarias">
+                    <AlertOctagonIcon className="h-4 w-4" /> {priorityCount} prioritarias
+                  </button>
+            }
+              </div>
+          } />
         </div>
-        <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-[900]">
+        <div className="pointer-events-none absolute bottom-[184px] left-3 z-[900] sm:left-4">
+          <MapLegend mode={mode} colorBy={colorBy} defaultOpen={!isMobile && width() >= 1280} showMinor={showMinor} onShowMinor={setShowMinor} />
+        </div>
+        <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-[900] sm:bottom-4 sm:left-4 sm:right-4">
           <MapTimeline series={series} yearFrom={filters.yearFrom} yearTo={filters.yearTo} trimestre={filters.trimestre as Quarter | null}
           onSelect={(y, q) => setFilters({ ...filters, yearFrom: y, yearTo: y, trimestre: q })}
           onReset={() => setFilters(withoutPeriod(filters))} />

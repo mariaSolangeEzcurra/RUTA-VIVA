@@ -1,5 +1,4 @@
 /* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
-@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;500;600;700;800&family=Overpass+Mono:wght@500;600&display=swap');
 
 /* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
 @import 'tailwindcss/base';
@@ -10,18 +9,18 @@
 
 :root {
   /* Asfalto (cabecera y textos fuertes) */
-  --navy: 28 39 49;
-  --navy-2: 38 52 63;
+  --navy: 15 42 61;
+  --navy-2: 22 56 79;
   /* Verde de señal vial (acción principal) */
-  --primary: 11 110 79;
-  --primary-soft: 226 242 235;
+  --primary: 15 118 110;
+  --primary-soft: 224 245 241;
   /* Amarillo de demarcación (atención) */
-  --signal: 242 183 5;
-  --canvas: 237 240 242;
+  --signal: 245 183 0;
+  --canvas: 244 246 249;
   --surface: 255 255 255;
-  --line: 220 225 229;
-  --ink: 22 32 42;
-  --muted: 91 104 117;
+  --line: 226 231 237;
+  --ink: 15 27 42;
+  --muted: 93 107 126;
   --fatal: 200 30 50;
   --ok: 21 128 61;
   --warn: 180 83 9;
@@ -31,13 +30,18 @@
   --p-baja: 5 150 105;
 }
 html, body, #root { height: 100%; }
-body { font-family: 'Overpass', system-ui, sans-serif; -webkit-font-smoothing: antialiased; background: rgb(var(--canvas)); color: rgb(var(--ink)); }
+html { font-size: 15.5px; }
+@media (min-width: 1024px) { html { font-size: 16px; } }
+@layer components {
+  .page { @apply mx-auto w-full max-w-[1440px] px-4 py-7 sm:px-6 lg:px-10 lg:py-10; }
+}
+body { font-family: 'Figtree Variable', system-ui, sans-serif; -webkit-font-smoothing: antialiased; line-height: 1.55; font-feature-settings: 'tnum' 0; background: rgb(var(--canvas)); color: rgb(var(--ink)); }
 .leaflet-container .leaflet-control-scale-line { background: rgb(255 255 255 / 0.9); }
 @media (max-width: 639px) { .leaflet-control-scale { display: none; } }
-.leaflet-container { font-family: 'Overpass', system-ui, sans-serif; background: #dfe4e8; }
-.leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: 0 12px 32px -8px rgb(28 39 49 / 0.35); }
+.leaflet-container { font-family: 'Figtree Variable', system-ui, sans-serif; background: #dfe4e8; }
+.leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: 0 12px 32px -8px rgb(15 42 61 / 0.35); }
 .leaflet-popup-content { margin: 14px 16px; }
-.leaflet-touch .leaflet-bar, .leaflet-touch .leaflet-control-layers { border: 1px solid rgb(var(--line)) !important; box-shadow: 0 6px 18px -6px rgb(28 39 49 / 0.25); border-radius: 10px; overflow: hidden; }
+.leaflet-touch .leaflet-bar, .leaflet-touch .leaflet-control-layers { border: 1px solid rgb(var(--line)) !important; box-shadow: 0 6px 18px -6px rgb(15 42 61 / 0.25); border-radius: 10px; overflow: hidden; }
 .leaflet-control-scale-line { border-radius: 4px; }
 
 /* Demarcación de carril: línea discontinua amarilla bajo la navegación */
@@ -45,7 +49,7 @@ body { font-family: 'Overpass', system-ui, sans-serif; -webkit-font-smoothing: a
 
 /* Marcadores de zona en el mapa */
 .rv-zone-icon { background: none; border: none; }
-.rv-zone { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 9999px; font-weight: 800; font-family: 'Overpass', sans-serif; border: 2.5px solid #fff; box-shadow: 0 4px 14px -2px rgb(0 0 0 / 0.45); transition: transform .15s ease; line-height: 1; }
+.rv-zone { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 9999px; font-weight: 800; font-family: 'Figtree Variable', sans-serif; border: 2.5px solid #fff; box-shadow: 0 4px 14px -2px rgb(0 0 0 / 0.45); transition: transform .15s ease; line-height: 1; }
 .rv-zone:hover { transform: scale(1.12); }
 .rv-zone--active { outline: 3px solid rgb(var(--navy)); outline-offset: 2px; transform: scale(1.18); }
 .rv-zone--pulse::after { content: ''; position: absolute; inset: -3px; border-radius: inherit; border: 3px solid currentColor; animation: rv-pulse 1.8s ease-out infinite; pointer-events: none; }

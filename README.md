@@ -30,3 +30,14 @@ Instalación: `npm install` y `npm run dev` (se añadió la dependencia `leaflet
 - **Mapa en tres columnas**: filtros (izquierda), mapa y panel **"Zonas a atender"** (derecha) con las zonas ordenadas por prioridad. Al tocar una zona, el mapa vuela hasta ella y abre su ficha.
 - Cada zona se marca con un **círculo numerado con su puesto en el ranking**, coloreado según su prioridad (la muy alta parpadea), y es visible a cualquier zoom. La vista **Zonas** (por defecto) atenúa los puntos individuales para que las zonas resalten.
 - Inicio con "Zonas a atender primero", accesos directos y tarjetas de indicadores con íconos. Filtros avanzados agrupados en "Más filtros".
+
+## Mapa base sin API key
+
+CARTO dejó de servir sus mosaicos raster sin clave (septiembre de 2026), por eso el mapa mostraba "API KEY REQUIRED". Ahora solo se usan proveedores **sin clave**: OpenStreetMap (por defecto), Esri Calles, Esri Gris claro, Esri Satélite y OpenTopoMap (relieve). Si un proveedor no responde, el mapa cambia solo al siguiente y lo avisa. Se elige en **Mapa base** dentro de la barra del mapa.
+
+## Ajustes de diseño (v3)
+
+- Letra **Figtree**, incluida en el proyecto (no depende de Google Fonts), más fácil de leer.
+- Paleta azul petróleo + verde azulado + amarillo de señal; márgenes y espaciados unificados (clase `.page`).
+- Inicio con **mapa de zonas** en miniatura; números animados en los indicadores.
+- Barra del mapa en una sola fila ordenada (se pliega en celular); leyenda con opción para mostrar u ocultar zonas media y baja.

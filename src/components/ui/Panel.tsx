@@ -12,9 +12,9 @@ interface PanelProps {
 
 export function Panel({ title, subtitle, actions, className, icon, children }: PanelProps) {
   return (
-    <section className={twMerge('rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgba(28,39,49,0.04)]', className)}>
+    <section className={twMerge('rounded-2xl border border-line/80 bg-surface shadow-[0_1px_3px_rgba(15,42,61,0.05)]', className)}>
       {(title || actions) &&
-      <header className="flex items-start justify-between gap-3 px-5 pb-1 pt-4">
+      <header className="flex items-start justify-between gap-4 px-5 pb-1 pt-5 sm:px-6">
           <div className="flex min-w-0 items-start gap-2.5">
             {icon && <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">{icon}</span>}
             <div className="min-w-0">
@@ -25,7 +25,7 @@ export function Panel({ title, subtitle, actions, className, icon, children }: P
           {actions}
         </header>
       }
-      <div className="px-5 pb-5 pt-3">{children}</div>
+      <div className="px-5 pb-5 pt-4 sm:px-6 sm:pb-6">{children}</div>
     </section>);
 
 }
