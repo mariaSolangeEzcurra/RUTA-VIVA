@@ -30,7 +30,6 @@ export function Interventions() {
   return (
     <main className="page">
       <PageHeader title="Catálogo de intervenciones" description="Reglas explícitas que vinculan un patrón observado con medidas candidatas, condiciones de aplicación y fuentes técnicas. Las medidas se activan por zona en el detalle de cada zona." />
-      <p role="note" className="mt-5 rounded-md border border-fatal/25 bg-fatal/5 px-3 py-2 text-sm font-medium text-fatal">{RECOMMENDATION_DISCLAIMER}</p>
       <div className="mt-8 grid gap-6 lg:gap-8 xl:grid-cols-[1fr_340px]">
         <div className="overflow-hidden rounded-lg border border-line bg-surface">
           <table className="w-full text-sm">

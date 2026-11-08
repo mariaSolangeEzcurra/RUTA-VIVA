@@ -76,7 +76,7 @@ export function Ranking() {
     <main className="page">
       <PageHeader
         title="Ranking de prioridad IPIV"
-        description="Ranking de carga histórica: ordena las concentraciones por consecuencias, recurrencia, concentración y patrones de los siniestros registrados. No expresa probabilidad de accidente."
+        description="Ordena las concentraciones por consecuencias, recurrencia, concentración y patrones de los siniestros registrados."
         actions={snap && <button type="button" onClick={exportCsv} className="inline-flex h-9 items-center gap-2 rounded-md border border-line bg-surface px-3 text-sm font-medium hover:bg-canvas"><DownloadIcon className="h-4 w-4" />Exportar CSV</button>} />
       
       <div className="mt-8 grid gap-6 lg:gap-8 xl:grid-cols-[1fr_320px]">
